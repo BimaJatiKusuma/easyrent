@@ -1,3 +1,4 @@
+import 'package:easyrent/Renter/renterLogin.dart';
 import 'package:easyrent/RenterAdmin/adminLogin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -37,6 +38,9 @@ class WelcomingPage extends StatelessWidget {
                 Text("Set your role"),
                 ElevatedButton(
                   onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return RenterLogin();
+                    }));
                   },
                   child: Text("Renter"),
                   style: ElevatedButton.styleFrom(

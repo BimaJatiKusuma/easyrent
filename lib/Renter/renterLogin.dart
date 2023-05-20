@@ -1,19 +1,19 @@
-import 'package:easyrent/RenterAdmin/adminHompage.dart';
-import 'package:easyrent/RenterAdmin/adminRegis.dart';
+import 'package:easyrent/Renter/renterHompage.dart';
+import 'package:easyrent/Renter/renterRegis.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 
 import '../Componen/form.dart';
 
-class AdminLogin extends StatefulWidget {
-  const AdminLogin({super.key});
+class RenterLogin extends StatefulWidget {
+  const RenterLogin({super.key});
 
   @override
-  State<AdminLogin> createState() => _AdminLoginState();
+  State<RenterLogin> createState() => _RenterLoginState();
 }
 
-class _AdminLoginState extends State<AdminLogin> {
+class _RenterLoginState extends State<RenterLogin> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
@@ -97,7 +97,7 @@ class _AdminLoginState extends State<AdminLogin> {
                                 
                                 if (_formkey.currentState!.validate() == true){
                                   Navigator.push(context, MaterialPageRoute(builder: (context){
-                                    return AdminHomePage();
+                                    return RenterHomePage();
                                   }));
                                 }
                               },
@@ -116,7 +116,7 @@ class _AdminLoginState extends State<AdminLogin> {
                                 TextButton(
                                     onPressed: () {
                                       Navigator.push(context, MaterialPageRoute(builder: (context){
-                                        return AdminRegister();
+                                        return RenterRegister();
                                       }));
                                     },
                                     child: Text(

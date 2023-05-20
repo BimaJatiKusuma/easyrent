@@ -7,6 +7,7 @@ class FormGroup extends StatefulWidget {
   final String? validasi;
   final String? validasiRespon;
   final TextEditingController? confirmPassword;
+  final bool? hanyaBaca;
   
   bool enableObscure;
   FormGroup({
@@ -15,6 +16,7 @@ class FormGroup extends StatefulWidget {
     required this.controllerNama,
     required this.keyboardType,
     this.enableObscure = false,
+    this.hanyaBaca = false,
     this.validasi,
     this.validasiRespon,
     this.confirmPassword,
@@ -65,6 +67,7 @@ class _FormGroupState extends State<FormGroup> {
         children: [
           Text(widget.stringNamaLabel),
           TextFormField(
+            readOnly: widget.hanyaBaca!,
             controller: widget.controllerNama,
             obscureText: obscureText,
             keyboardType: widget.keyboardType,
