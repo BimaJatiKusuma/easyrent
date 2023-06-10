@@ -1,20 +1,24 @@
 import 'package:easyrent/Componen/form.dart';
+import 'package:easyrent/RenterAdmin/profile/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 
 class AdminHomePage extends StatefulWidget {
-  const AdminHomePage({super.key});
+  AdminHomePage({
+    this.selectedIndex = 1,
+    super.key
+    });
 
+  int selectedIndex;
   @override
   State<AdminHomePage> createState() => _AdminHomePageState();
 }
 
 class _AdminHomePageState extends State<AdminHomePage> {
-  int _selectedIndex = 1;
   void _onItemTap(int index){
     setState(() {
-      _selectedIndex = index;
+      widget.selectedIndex = index;
     });
   }
   List _widgetOptions = [
@@ -27,7 +31,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
     return Scaffold(
       backgroundColor: Color.fromRGBO(239, 229, 237, 1),
       body: SafeArea(
-        child: _widgetOptions.elementAt(_selectedIndex),
+        child: _widgetOptions.elementAt(widget.selectedIndex),
       ),
 
       bottomNavigationBar: BottomNavigationBar(
@@ -38,7 +42,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ""),
         ],
-      currentIndex: _selectedIndex,
+      currentIndex: widget.selectedIndex,
       onTap: _onItemTap,
       selectedItemColor: Color.fromRGBO(74, 73, 148, 1),
       ),
@@ -173,131 +177,6 @@ class _AdminProfilState extends State<AdminProfil> {
           Text("Ini Rent Data")
         ]),
       ),
-    );
-  }
-}
-
-
-class AdminProfilProfil extends StatefulWidget {
-  const AdminProfilProfil({super.key});
-
-  @override
-  State<AdminProfilProfil> createState() => _AdminProfilProfilState();
-}
-
-class _AdminProfilProfilState extends State<AdminProfilProfil> {
-  TextEditingController usernameController = TextEditingController(text: "@squarepants");
-  TextEditingController emailController = TextEditingController(text: "spongebobsquare@gmail.com");
-  TextEditingController phoneController = TextEditingController(text: "+62 821394485123");
-  TextEditingController addressController = TextEditingController(text: "Jl Gadjah Mada No. 666 Bekasi");
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundImage: AssetImage("images/admin_rent.png"),
-          ),
-          SizedBox(height: 10,),
-          FormGroup(stringNamaLabel: "Username", controllerNama: usernameController, keyboardType: TextInputType.text, hanyaBaca: true,),
-          SizedBox(height: 10,),
-          FormGroup(stringNamaLabel: "Email", controllerNama: emailController, keyboardType: TextInputType.emailAddress, hanyaBaca: true,),
-          SizedBox(height: 10,),
-          FormGroup(stringNamaLabel: "No Telp", controllerNama: phoneController, keyboardType: TextInputType.phone, hanyaBaca: true,),
-          SizedBox(height: 10,),
-          FormGroup(stringNamaLabel: "Address", controllerNama: addressController, keyboardType: TextInputType.text, hanyaBaca: true,),
-          SizedBox(height: 30,),
-          ElevatedButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context){
-              return AdminProfilEdit();
-            }));
-          }, child: Text("Edit Profile"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color.fromRGBO(74, 73, 148, 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)
-              ),
-              minimumSize: Size(double.infinity, 50)
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-
-class AdminProfilEdit extends StatefulWidget {
-  const AdminProfilEdit({super.key});
-
-  @override
-  State<AdminProfilEdit> createState() => _AdminProfilEditState();
-}
-
-class _AdminProfilEditState extends State<AdminProfilEdit> {
-  TextEditingController usernameController = TextEditingController(text: "@squarepants");
-  TextEditingController emailController = TextEditingController(text: "spongebobsquare@gmail.com");
-  TextEditingController phoneController = TextEditingController(text: "+62 821394485123");
-  TextEditingController addressController = TextEditingController(text: "Jl Gadjah Mada No. 666 Bekasi");
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(onPressed: (){
-          Navigator.pop(context);
-        }, icon: Icon(Icons.keyboard_double_arrow_left)),
-        title: Text("Edit Profile"),
-        backgroundColor: Color.fromRGBO(12, 10, 49, 1),
-      ),
-      body: Container(
-      padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-      child: ListView(
-        children: [
-          SizedBox(height: 20,),
-          Container(
-            alignment: Alignment.center,
-            width: 100,
-            height: 100,
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  child: Image(image: AssetImage("images/admin_rent.png")),
-                ),
-                Positioned(
-                  child: IconButton(onPressed: (){},
-                    icon: Icon(Icons.edit_outlined)),
-                  right: -10,
-                  bottom: -10,
-                )
-              ],
-            ),
-          ),
-          SizedBox(height: 10,),
-          FormGroup(stringNamaLabel: "Username", controllerNama: usernameController, keyboardType: TextInputType.text),
-          SizedBox(height: 10,),
-          FormGroup(stringNamaLabel: "Email", controllerNama: emailController, keyboardType: TextInputType.emailAddress),
-          SizedBox(height: 10,),
-          FormGroup(stringNamaLabel: "No Telp", controllerNama: phoneController, keyboardType: TextInputType.phone),
-          SizedBox(height: 10,),
-          FormGroup(stringNamaLabel: "Address", controllerNama: addressController, keyboardType: TextInputType.text),
-          SizedBox(height: 30,),
-          ElevatedButton(onPressed: (){
-            Navigator.pop(context);
-          }, child: Text("Save Change"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color.fromRGBO(74, 73, 148, 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)
-              ),
-              minimumSize: Size(double.infinity, 50)
-            ),
-          )
-        ],
-      )),
     );
   }
 }

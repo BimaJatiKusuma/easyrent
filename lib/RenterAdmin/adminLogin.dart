@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easyrent/RenterAdmin/adminHompage.dart';
 import 'package:easyrent/RenterAdmin/adminRegis.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
@@ -17,6 +19,7 @@ class _AdminLoginState extends State<AdminLogin> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  String alertText = "";
 
 
   @override
@@ -84,6 +87,7 @@ class _AdminLoginState extends State<AdminLogin> {
                         validasi: r'^.{6,}$',
                         validasiRespon: "Password minimal 6 karakter",
                       ),
+                      Text(alertText, style: TextStyle(color: Colors.red),),
                       SizedBox(
                         height: 30,
                       ),
@@ -96,9 +100,10 @@ class _AdminLoginState extends State<AdminLogin> {
                                 _formkey.currentState!.validate();
                                 
                                 if (_formkey.currentState!.validate() == true){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                                    return AdminHomePage();
-                                  }));
+                                  signIn(emailController.text, passwordController.text);
+                                  // Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  //   return AdminHomePage();
+                                  // }));
                                 }
                               },
                               child: Text("Login"),
@@ -138,7 +143,74 @@ class _AdminLoginState extends State<AdminLogin> {
       ),
     );
   }
+
+
+
+
+  void route(){
+    User? user = FirebaseAuth.instance.currentUser;
+    FirebaseFirestore.instance
+      .collection('users_admin')
+      .doc(user!.uid)
+      .get()
+      .then((DocumentSnapshot documentSnapshot) {
+        if (documentSnapshot.exists){
+          if(documentSnapshot.get('deleted_at')==''){
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
+                return AdminHomePage();
+              }), (route) => false);
+          }
+          else{
+            setState(() {
+              // visible = false;
+              alertText = 'Akun telah dihapus/dinonaktifkan';
+            });
+          }
+        }
+        else{
+          setState(() {
+            // visible = false;
+            alertText = 'Email tidak terdaftar';
+          });
+          print('Email tidak terdaftar');
+        }
+      });
+  }
+
+
+
+
+
+  void signIn(String email, String password) async {
+    if(_formkey.currentState!.validate()){
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+        route();
+      }
+      on FirebaseAuthException catch (e){
+        print(e.code);
+        if (e.code == 'user-not-found'){
+          setState(() {
+            // visible = false;
+            alertText = 'Email tidak terdaftar';
+          });
+          print('Email tidak terdaftar');
+        }
+        else if (e.code == 'wrong-password'){
+          setState(() {
+            // visible = false;
+            alertText = 'Kata sandi salah';
+          });
+          print('Kata sandi salah');
+        }
+      }
+    }
+  }
+
+
+
 }
+
 
 
 

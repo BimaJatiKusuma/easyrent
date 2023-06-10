@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easyrent/RenterAdmin/adminLogin.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 
 import '../Componen/form.dart';
 
@@ -17,6 +21,7 @@ class _AdminRegisterState extends State<AdminRegister> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController passwordConfirmController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  String alertTextRegis = "";
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +86,11 @@ class _AdminRegisterState extends State<AdminRegister> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          _formkey.currentState!.validate();
+                          if(_formkey.currentState!.validate() == true){
+                            signUp(usernameController.text, emailController.text, passwordController.text, addressController.text, phoneController.text);
+                          }
+                          // _formkey.currentState!.validate();
+                          // print(_formkey.currentState!.validate());
                         },
                         child: Text("Sign Up"),
                         style: ElevatedButton.styleFrom(
@@ -115,4 +124,42 @@ class _AdminRegisterState extends State<AdminRegister> {
       ),
     );
   }
+
+  void signUp(String username, String email, String password, String address, String phone_number) async {
+    CircularProgressIndicator();
+    if(_formkey.currentState!.validate()){
+      try{
+        //fix this
+      await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password)
+        .then((value) => {postDetailsToFirestore(username, email, address, phone_number)});
+        // .catchError((e){});
+      }
+      on FirebaseAuthException catch (e){
+        if(e.code == 'email-already-in-use'){
+            setState(() {
+              alertTextRegis ='email sudah digunakan';
+            });
+            
+          }
+      }
+    }
+  }
+
+  postDetailsToFirestore(String username, String email, String address, String phone_number) async {
+    CircularProgressIndicator();
+    var user = FirebaseAuth.instance.currentUser;
+    CollectionReference ref = FirebaseFirestore.instance.collection('users_admin');
+    ref.doc(user!.uid).set({'username':username, 'email':email, 'address':address, 'phone_number':phone_number, "deleted_at":"", "photo_profile":""});
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
+      return AdminLogin();
+    }));
+  }
+
+
 }
+
+
+
+
+

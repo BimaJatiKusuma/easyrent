@@ -16,56 +16,60 @@ class WelcomingPage extends StatelessWidget {
         elevation: 0,
         title: Text('Easyrent', style: TextStyle(fontFamily: 'PoppinsMedium', fontSize: 16, fontWeight: FontWeight.w500),),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Image(image: AssetImage('images/start.png')),
-          Container(
-            child: Column(
-              children: [
-                Text("Hello !",style: TextStyle(fontFamily: 'PoppinsMedium', fontSize: 24),),
-                Text("Simply way to enjoy your trip")
-              ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Container(
+              width: 200,
+              child: Image(image: AssetImage('images/start.png'))),
+            Container(
+              child: Column(
+                children: [
+                  Text("Hello !",style: TextStyle(fontFamily: 'PoppinsMedium', fontSize: 24),),
+                  Text("Simply way to enjoy your trip")
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Container(
-            width: 250,
-            child: Column(
-              children: [
-                Text("Set your role"),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return RenterLogin();
-                    }));
-                  },
-                  child: Text("Renter"),
-                  style: ElevatedButton.styleFrom(
-                      shape: StadiumBorder(),
-                      minimumSize: Size(double.infinity, 50),
-                      backgroundColor: Color.fromRGBO(74, 73, 148, 1)),
-                ),
-                SizedBox(height: 10,),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return AdminLogin();
-                    }));
-                  },
-                  child: Text("Rent Admin"),
-                  style: ElevatedButton.styleFrom(
-                      shape: StadiumBorder(),
-                      minimumSize: Size(double.infinity, 50),
-                      backgroundColor: Color.fromRGBO(140, 51, 95, 1)),
+            SizedBox(
+              height: 20,
+            ),
+            Container(
+              width: 250,
+              child: Column(
+                children: [
+                  Text("Set your role"),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                        return RenterLogin();
+                      }));
+                    },
+                    child: Text("Renter"),
+                    style: ElevatedButton.styleFrom(
+                        shape: StadiumBorder(),
+                        minimumSize: Size(double.infinity, 50),
+                        backgroundColor: Color.fromRGBO(74, 73, 148, 1)),
                   ),
-                SizedBox(height: 20,),
-              ],
-            ),
-          )
-        ],
+                  SizedBox(height: 10,),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                        return AdminLogin();
+                      }));
+                    },
+                    child: Text("Rent Admin"),
+                    style: ElevatedButton.styleFrom(
+                        shape: StadiumBorder(),
+                        minimumSize: Size(double.infinity, 50),
+                        backgroundColor: Color.fromRGBO(140, 51, 95, 1)),
+                    ),
+                  SizedBox(height: 20,),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
