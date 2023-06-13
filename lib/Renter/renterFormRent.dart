@@ -57,11 +57,13 @@ class _RenterFormRentState extends State<RenterFormRent> {
     });
   }
 
+  int durationDate = 1;
 
 
 
   @override
   Widget build(BuildContext context) {
+    DateTime dropOffDate = DateTime(dateTime.year, dateTime.month, dateTime.day + durationDate, dateTime.hour, dateTime.minute);
     final hours = dateTime.hour.toString().padLeft(2, '0');
     // final hours = dateTime.hour.toString();
     final minutes = dateTime.minute.toString().padLeft(2, '0');
@@ -100,7 +102,7 @@ class _RenterFormRentState extends State<RenterFormRent> {
                       ButtonFormRentDate(),
                       ButtonFormRentTime(hours, minutes),
                       ButtonFormRentDuration(),
-                      ButtonFormRentDropOff(),
+                      ButtonFormRentDropOff(dropOffDate),
                     ],
                   ),
                 ),
@@ -205,33 +207,48 @@ class _RenterFormRentState extends State<RenterFormRent> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("Duration"),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    elevation: 0,
-                    minimumSize: Size.fromHeight(40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Colors.black)
-                    )
+                Container(
+                  height: 40,
+                  padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all()
                   ),
-                  onPressed: (){
-
-                  },
-                
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("3 Days"),
-                  ],
-                ),),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("${durationDate} Days"),
+                      Container(
+                        child: Row(
+                          children: [
+                            IconButton(onPressed: (){
+                              if(durationDate != 1){
+                                setState(() {
+                                  durationDate -=1;
+                                });
+                              }
+                              print(durationDate);
+                            }, icon: Icon(Icons.remove)),
+                            IconButton(onPressed: (){
+                              setState(() {
+                                durationDate +=1;
+                              });
+                              print(durationDate);
+                            }, icon: Icon(Icons.add))
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                )
               ],
             ),
           );
   }
 
-  ButtonFormRentDropOff() {
+  ButtonFormRentDropOff(dropOffDate) {
     return Container(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,19 +272,13 @@ class _RenterFormRentState extends State<RenterFormRent> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("12 May 2023"),
+                    Text("${DateFormat("dd MMMM yyyy, HH:mm").format(dropOffDate)}"),
                   ],
                 ),),
               ],
             ),
           );
   }
-
-
-
-
-
-
 
 
 

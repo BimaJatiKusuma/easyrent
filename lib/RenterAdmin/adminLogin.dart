@@ -170,7 +170,7 @@ class _AdminLoginState extends State<AdminLogin> {
         else{
           setState(() {
             // visible = false;
-            alertText = 'Email tidak terdaftar';
+            alertText = 'Akun renter tidak bisa digunakan sebagai admin';
           });
           print('Email tidak terdaftar');
         }

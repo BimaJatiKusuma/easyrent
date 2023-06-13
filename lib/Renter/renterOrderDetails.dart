@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:geolocator/geolocator.dart';
+
 
 class RenterOrderDetails extends StatefulWidget {
   const RenterOrderDetails({super.key});
@@ -10,6 +12,28 @@ class RenterOrderDetails extends StatefulWidget {
 }
 
 class _RenterOrderDetailsState extends State<RenterOrderDetails> {
+Future<Position> lokasiSekarang() async{
+  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if(!serviceEnabled){
+    return Future.error('Location services are disabled');
+  }
+
+  LocationPermission permission = await Geolocator.checkPermission();
+  if(permission == LocationPermission.denied){
+    permission = await Geolocator.requestPermission();
+    if(permission == LocationPermission.denied){
+      return Future.error('Location permissions are denied');
+    }
+  }
+  if(permission == LocationPermission.deniedForever){
+    return Future.error('Location permissions are permanently denied, we cannot request location');
+  }
+
+  return await Geolocator.getCurrentPosition();
+}
+
+String lat='';
+String long='';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +47,16 @@ class _RenterOrderDetailsState extends State<RenterOrderDetails> {
       body: Column(
         children: [
           ContainerCustomShadow(containerChild: RenterOrderDetailsDescription(), height: 225,),
-          ContainerCustomShadow(containerChild: RenterOrderDetailsButton(labelButton: "Pick-up Location", namaButton: "Set your pick-up location please", onPressed: (){pickUPLocation();},)),
+          // Text("${lat}, ${long}"),
+          ContainerCustomShadow(containerChild: RenterOrderDetailsButton(labelButton: "Pick-up Location", namaButton: lat =="" ? "Set your pick-up location please" : "${lat}, ${long}", onPressed: (){
+            lokasiSekarang().then((value){
+              lat = '${value.latitude}';
+              long = '${value.longitude}';
+              print(lat);
+              print(long);
+              setState(() {});
+            });
+          },)),
           ContainerCustomShadow(containerChild: RenterOrderDetailsButton(labelButton: "Add ID card (E-KTP / Password)", namaButton: "Set your pick-up location please", onPressed: (){addIDCard();},)),
           SizedBox(height: 10,),
           Container(
@@ -46,7 +79,9 @@ class _RenterOrderDetailsState extends State<RenterOrderDetails> {
     );
   }
 
-  pickUPLocation(){
+  pickUPLocation() async{
+  Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  print(position);
     print("Ini method PickUp");
   }
 

@@ -1,5 +1,5 @@
 import 'package:easyrent/Componen/form.dart';
-import 'package:easyrent/RenterAdmin/adminHompage.dart';
+import 'package:easyrent/Renter/renterHompage.dart';
 import 'package:easyrent/welcomingPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -10,18 +10,18 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
 
-class AdminProfilProfil extends StatefulWidget {
-  AdminProfilProfil({super.key}){
-  futureData = FirebaseFirestore.instance.collection('users_admin').doc(FirebaseAuth.instance.currentUser!.uid).get();
+class RenterProfilProfil extends StatefulWidget {
+  RenterProfilProfil({super.key}){
+  futureData = FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
   }
   late var futureData;
   late Map dataUsers;
 
   @override
-  State<AdminProfilProfil> createState() => _AdminProfilProfilState();
+  State<RenterProfilProfil> createState() => _RenterProfilProfilState();
 }
 
-class _AdminProfilProfilState extends State<AdminProfilProfil> {
+class _RenterProfilProfilState extends State<RenterProfilProfil> {
   late TextEditingController usernameController = TextEditingController(text: widget.dataUsers['username']);
   late TextEditingController emailController = TextEditingController(text: widget.dataUsers['email']);
   late TextEditingController phoneController = TextEditingController(text: widget.dataUsers['phone_number']);
@@ -60,7 +60,7 @@ class _AdminProfilProfilState extends State<AdminProfilProfil> {
                     SizedBox(height: 30,),
                     ElevatedButton(onPressed: (){
                       Navigator.push(context, MaterialPageRoute(builder: (context){
-                        return AdminProfilEdit();
+                        return RenterProfilEdit();
                       }));
                     }, child: Text("Edit Profile"),
                       style: ElevatedButton.styleFrom(
@@ -71,26 +71,26 @@ class _AdminProfilProfilState extends State<AdminProfilProfil> {
                         minimumSize: Size(double.infinity, 50)
                       ),
                     ),
-                        SizedBox(height: 30,),
-                        ElevatedButton(onPressed: () async {
-                          try{
-                            await FirebaseAuth.instance.signOut();
-                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
-                              return WelcomingPage();
-                            }), (route) => false);
-                          }
-                          catch (e){
-                            print(e);
-                          }
-                        }, child: Text("Logout"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)
-                            ),
-                            minimumSize: Size(double.infinity, 50)
-                          ),
-                        )
+                    SizedBox(height: 30,),
+                    ElevatedButton(onPressed: () async {
+                      try{
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
+                          return WelcomingPage();
+                        }), (route) => false);
+                      }
+                      catch (e){
+                        print(e);
+                      }
+                    }, child: Text("Logout"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)
+                        ),
+                        minimumSize: Size(double.infinity, 50)
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -107,18 +107,18 @@ class _AdminProfilProfilState extends State<AdminProfilProfil> {
 
 
 
-class AdminProfilEdit extends StatefulWidget {
-  AdminProfilEdit({super.key}){
-    futureData = FirebaseFirestore.instance.collection('users_admin').doc(FirebaseAuth.instance.currentUser!.uid).get();
+class RenterProfilEdit extends StatefulWidget {
+  RenterProfilEdit({super.key}){
+    futureData = FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
   }
 
   late var futureData;
   late Map dataUsers;
   @override
-  State<AdminProfilEdit> createState() => _AdminProfilEditState();
+  State<RenterProfilEdit> createState() => _RenterProfilEditState();
 }
 
-class _AdminProfilEditState extends State<AdminProfilEdit> {
+class _RenterProfilEditState extends State<RenterProfilEdit> {
   late TextEditingController usernameController = TextEditingController(text: widget.dataUsers['username']);
   late TextEditingController emailController = TextEditingController(text: widget.dataUsers['email']);
   late TextEditingController phoneController = TextEditingController(text: widget.dataUsers['phone_number']);
@@ -212,8 +212,8 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                               return AlertDialog(
                                 title: Text("Pilih Gambar"),
                                 actions: [
-                                  ElevatedButton(onPressed: (){getImage();}, child: Text("Galeri")),
-                                  ElevatedButton(onPressed: (){getImage2();}, child: Text("Kamera")),
+                                  ElevatedButton(onPressed: ()async {await getImage(); Navigator.pop(context);}, child: Text("Galeri")),
+                                  ElevatedButton(onPressed: ()async {await getImage2(); Navigator.pop(context);}, child: Text("Kamera")),
                                 ],
                               );
                             },
@@ -237,7 +237,7 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                 SizedBox(height: 30,),
                 ElevatedButton(onPressed: () async{
                   await uploadImage();
-                  FirebaseFirestore.instance.collection('users_admin').doc(FirebaseAuth.instance.currentUser!.uid).update({
+                  FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).update({
                     'username':usernameController.text,
                     'address':addressController.text,
                     'phone_number':phoneController.text,
@@ -245,7 +245,7 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                   });
 
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
-                    return AdminHomePage(selectedIndex: 2,);
+                    return RenterHomePage(selectedIndex: 2,);
                   }));
                 }, child: Text("Save Change"),
                   style: ElevatedButton.styleFrom(
