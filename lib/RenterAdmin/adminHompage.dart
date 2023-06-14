@@ -178,13 +178,13 @@ class _AdminMainHomepageState extends State<AdminMainHomepage> {
                           child: ListView(
                             scrollDirection: Axis.horizontal,
                             children: [
-                              SelectCategory(nama: "Bicycle", alamatGambar: "images/bicycle.png", newRoute: ProductCar(category: "bicycle"),),
+                              SelectCategory(nama: "Bicycle", alamatGambar: "images/bicycle.png", newRoute: ProductCar(category: 100),),
                               SizedBox(width: 20,),
-                              SelectCategory(nama: "Motor", alamatGambar: "images/motor.png", newRoute: ProductCar(category: "motorcycle"),),
+                              SelectCategory(nama: "Motor", alamatGambar: "images/motor.png", newRoute: ProductCar(category: 200),),
                               SizedBox(width: 20,),
-                              SelectCategory(nama: "Car", alamatGambar: "images/car.png", newRoute: ProductCar(category: "car",),),
+                              SelectCategory(nama: "Car", alamatGambar: "images/car.png", newRoute: ProductCar(category: 300,),),
                               SizedBox(width: 20,),
-                              SelectCategory(nama: "Bus", alamatGambar: "images/bus.png", newRoute: ProductCar(category: "bus"),)
+                              SelectCategory(nama: "Bus", alamatGambar: "images/bus.png", newRoute: ProductCar(category: 400),)
                             ],
                           ),
                         ),
