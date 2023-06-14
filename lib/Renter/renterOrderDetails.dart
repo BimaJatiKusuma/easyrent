@@ -5,8 +5,9 @@ import 'package:geolocator/geolocator.dart';
 
 
 class RenterOrderDetails extends StatefulWidget {
-  const RenterOrderDetails({super.key});
-
+  RenterOrderDetails({
+    super.key
+    });
   @override
   State<RenterOrderDetails> createState() => _RenterOrderDetailsState();
 }

@@ -1,4 +1,5 @@
 import 'package:easyrent/Renter/renterOrderDetails.dart';
+import 'package:easyrent/Renter/test_countdown/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
@@ -117,8 +118,12 @@ class _RenterFormRentState extends State<RenterFormRent> {
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(10, 0, 10, 30),
             child: ElevatedButton(onPressed: (){
+              print(dropOffDate); //cek countdown
+              print(dropOffDate.runtimeType); //cek countdown
                 Navigator.push(context, MaterialPageRoute(builder: (context){
                   return RenterOrderDetails();
+                  // var a = dropOffDate.toString();
+                  // return TestCountDown(dropOffDate: a,);
                 }));
               },
               style: ElevatedButton.styleFrom(
