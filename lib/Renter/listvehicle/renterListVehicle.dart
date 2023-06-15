@@ -96,6 +96,7 @@ class _RenterListVehicleState extends State<RenterListVehicle> {
                           }
                           if(snapshot2.hasData){
                             dataAdmin = snapshot2.data!.data() as Map;
+                            print(vehicleData['id_admin']);
                             return ListVehicleDataView(
                               vehicleURLphoto: vehicleData['url_photo'],
                               vehicleName: vehicleData['vehicle_name'],
@@ -103,6 +104,7 @@ class _RenterListVehicleState extends State<RenterListVehicle> {
                               vehiclePrice: vehicleData['price'],
                               vehicleAdminAddress: dataAdmin['address'],
                               vehicleUID: vehicleData.id,
+                              vehicleAdminUID: vehicleData['id_admin'],
                             );
                           }
                           return CircularProgressIndicator();
@@ -160,6 +162,7 @@ class ListVehicleDataView extends StatelessWidget {
     required this.vehicleURLphoto,
     required this.vehicleName,
     required this.vehicleAdminName,
+    required this.vehicleAdminUID,
     required this.vehicleAdminAddress,
     required this.vehiclePrice,
     required this.vehicleUID,
@@ -169,6 +172,7 @@ class ListVehicleDataView extends StatelessWidget {
   final String vehicleURLphoto;
   final String vehicleName;
   final String vehicleAdminName;
+  final String vehicleAdminUID;
   final String vehicleAdminAddress;
   final int vehiclePrice;
   final String vehicleUID;
@@ -228,7 +232,7 @@ class ListVehicleDataView extends StatelessWidget {
                       ),
                       onPressed: (){
                         Navigator.push(context, MaterialPageRoute(builder: (context){
-                          return RenterFormRent(vehicleUID: vehicleUID,);
+                          return RenterFormRent(vehicleUID: vehicleUID,adminUID: vehicleAdminUID,);
                         }));
                       },
                       child: Text("Rent"))

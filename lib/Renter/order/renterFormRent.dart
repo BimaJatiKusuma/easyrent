@@ -8,9 +8,11 @@ import 'package:intl/intl.dart';
 class RenterFormRent extends StatefulWidget {
   RenterFormRent({
     required this.vehicleUID,
+    required this.adminUID,
     super.key
     });
     final String vehicleUID;
+    final String adminUID;
 
   @override
   State<RenterFormRent> createState() => _RenterFormRentState();
@@ -73,7 +75,8 @@ class _RenterFormRentState extends State<RenterFormRent> {
     // final hours = dateTime.hour.toString();
     final minutes = dateTime.minute.toString().padLeft(2, '0');
     // final minutes = dateTime.hour.toString();
-    
+    print('hello');
+    print(widget.adminUID);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(onPressed: (){
@@ -125,7 +128,7 @@ class _RenterFormRentState extends State<RenterFormRent> {
               print(dropOffDate); //cek countdown
               print(dropOffDate.runtimeType); //cek countdown
                 Navigator.push(context, MaterialPageRoute(builder: (context){
-                  return RenterOrderDetails(duration: durationDate, dropOffDate: dropOffDate.toString(),);
+                  return RenterOrderDetails(duration: durationDate, dropOffDate: dropOffDate.toString(), vehicleUID: widget.vehicleUID, adminUID: widget.adminUID, pickUpDate: DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute).toString(),);
                   // var a = dropOffDate.toString();
                   // return TestCountDown(dropOffDate: a,);
                 }));
