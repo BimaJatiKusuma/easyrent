@@ -126,7 +126,7 @@ class _RenterProfilEditState extends State<RenterProfilEdit> {
 
   File? produkFoto;
   String fotoProduk1 = '';
-  String imageUrl = '';
+  late String imageUrl = widget.dataUsers['photo_profil'];
 
   Future getImage() async {
     final ImagePicker foto = ImagePicker();
@@ -151,25 +151,21 @@ class _RenterProfilEditState extends State<RenterProfilEdit> {
     setState(() {});
   }
 
-  Future uploadImage() async {
+  Future updateImage() async {
     String uniqeFileName = DateTime.now().millisecondsSinceEpoch.toString();
-    //Reference ke storage root
-    Reference referenceRoot = FirebaseStorage.instance.ref();
-    Reference referenceDirFotoProduk = referenceRoot.child('users_profile');
 
-    //Membuat reference untuk foto yang akan diupload
-    Reference referenceFotoProdukUpload = referenceDirFotoProduk.child(uniqeFileName);
+    Reference referenceFotoProdukUpdate =
+        FirebaseStorage.instance.refFromURL(imageUrl);
 
     try {
       //menyimpan file
-      await referenceFotoProdukUpload.putFile(File(fotoProduk1));
+      await referenceFotoProdukUpdate.putFile(File(fotoProduk1));
       //success
-      imageUrl = await referenceFotoProdukUpload.getDownloadURL();
+      imageUrl = await referenceFotoProdukUpdate.getDownloadURL();
     } catch (error) {
       print(error);
     }
   }
-
   
   @override
   Widget build(BuildContext context) {
@@ -236,7 +232,7 @@ class _RenterProfilEditState extends State<RenterProfilEdit> {
                 FormGroup(stringNamaLabel: "Address", controllerNama: addressController, keyboardType: TextInputType.text),
                 SizedBox(height: 30,),
                 ElevatedButton(onPressed: () async{
-                  await uploadImage();
+                  await updateImage();
                   FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).update({
                     'username':usernameController.text,
                     'address':addressController.text,

@@ -1,7 +1,7 @@
 import 'package:easyrent/Componen/form.dart';
 import 'package:easyrent/Renter/profile/profile.dart';
 import 'package:easyrent/Renter/renterChat.dart';
-import 'package:easyrent/Renter/renterListVehicle.dart';
+import 'package:easyrent/Renter/listvehicle/renterListVehicle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
@@ -109,13 +109,13 @@ class _RenterMainHomepageState extends State<RenterMainHomepage> {
                           child: ListView(
                             scrollDirection: Axis.horizontal,
                             children: [
-                              SelectCategory(nama: "Bicycle", alamatGambar: "images/bicycle.png"),
+                              SelectCategory(nama: "Bicycle", alamatGambar: "images/bicycle.png", newRoute: RenterListVehicle(category: 100),),
                               SizedBox(width: 20,),
-                              SelectCategory(nama: "Motor", alamatGambar: "images/motor.png"),
+                              SelectCategory(nama: "Motor", alamatGambar: "images/motor.png", newRoute: RenterListVehicle(category: 200),),
                               SizedBox(width: 20,),
-                              SelectCategory(nama: "Car", alamatGambar: "images/car.png"),
+                              SelectCategory(nama: "Car", alamatGambar: "images/car.png", newRoute: RenterListVehicle(category: 300),),
                               SizedBox(width: 20,),
-                              SelectCategory(nama: "Bus", alamatGambar: "images/bus.png")
+                              SelectCategory(nama: "Bus", alamatGambar: "images/bus.png", newRoute: RenterListVehicle(category: 400),)
                             ],
                           ),
                         ),
@@ -208,9 +208,11 @@ class NewsComponent extends StatelessWidget {
 class SelectCategory extends StatelessWidget {
   final String nama;
   final String alamatGambar;
+  final dynamic newRoute;
   const SelectCategory({
     required this.nama,
     required this.alamatGambar,
+    required this.newRoute,
     super.key,
   });
 
@@ -219,7 +221,7 @@ class SelectCategory extends StatelessWidget {
     return ElevatedButton(
       onPressed: (){
         Navigator.push(context, MaterialPageRoute(builder: (context){
-          return RenterListVehicle();
+          return newRoute;
         }));
       },
       style: ElevatedButton.styleFrom(

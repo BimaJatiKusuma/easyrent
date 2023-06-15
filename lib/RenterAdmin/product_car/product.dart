@@ -152,7 +152,21 @@ class _ProductCarItemState extends State<ProductCarItem> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    IconButton(onPressed: (){}, icon: Icon(Icons.delete, color: Color.fromRGBO(148, 23, 23, 1),)),
+                    IconButton(onPressed: (){
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text("Hapus Kendaraan"),
+                              actions: [
+                                ElevatedButton(onPressed: (){Navigator.pop(context);}, child: Text("Tidak")),
+                                ElevatedButton(onPressed: (){FirebaseFirestore.instance.collection('vehicle').doc(widget.vehicleUID).update({'deleted_at':DateTime.now().toString()}); Navigator.pop(context);}, child: Text("YA")),
+                              ],
+                            );
+                          },
+                          );
+                      
+                    }, icon: Icon(Icons.delete, color: Color.fromRGBO(148, 23, 23, 1),)),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color.fromRGBO(74, 73, 148, 1),

@@ -1,4 +1,4 @@
-import 'package:easyrent/Renter/renterOrderDetails.dart';
+import 'package:easyrent/Renter/order/renterOrderDetails.dart';
 import 'package:easyrent/Renter/test_countdown/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -6,7 +6,11 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:intl/intl.dart';
 
 class RenterFormRent extends StatefulWidget {
-  const RenterFormRent({super.key});
+  RenterFormRent({
+    required this.vehicleUID,
+    super.key
+    });
+    final String vehicleUID;
 
   @override
   State<RenterFormRent> createState() => _RenterFormRentState();
@@ -121,7 +125,7 @@ class _RenterFormRentState extends State<RenterFormRent> {
               print(dropOffDate); //cek countdown
               print(dropOffDate.runtimeType); //cek countdown
                 Navigator.push(context, MaterialPageRoute(builder: (context){
-                  return RenterOrderDetails();
+                  return RenterOrderDetails(duration: durationDate, dropOffDate: dropOffDate.toString(),);
                   // var a = dropOffDate.toString();
                   // return TestCountDown(dropOffDate: a,);
                 }));

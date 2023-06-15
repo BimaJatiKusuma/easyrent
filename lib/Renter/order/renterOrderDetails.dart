@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 class RenterOrderDetails extends StatefulWidget {
   RenterOrderDetails({
+    required this.duration,
+    required this.dropOffDate,
     super.key
     });
+  final int duration;
+  final String dropOffDate;
   @override
   State<RenterOrderDetails> createState() => _RenterOrderDetailsState();
 }
@@ -35,8 +40,13 @@ Future<Position> lokasiSekarang() async{
 
 String lat='';
 String long='';
+Set<Marker> markers = {};
+late GoogleMapController googleMapController;
   @override
   Widget build(BuildContext context) {
+    CameraPosition initialCameraPosition = CameraPosition(target: LatLng(-6.1758228, 106.8222985));
+    print(widget.duration);
+    print(widget.dropOffDate);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(onPressed: (){
@@ -45,19 +55,41 @@ String long='';
         title: Text("Order Details"),
         backgroundColor: Color.fromRGBO(12, 10, 49, 1),
       ),
-      body: Column(
+      body: ListView(
         children: [
           ContainerCustomShadow(containerChild: RenterOrderDetailsDescription(), height: 225,),
           // Text("${lat}, ${long}"),
-          ContainerCustomShadow(containerChild: RenterOrderDetailsButton(labelButton: "Pick-up Location", namaButton: lat =="" ? "Set your pick-up location please" : "${lat}, ${long}", onPressed: (){
-            lokasiSekarang().then((value){
+          ContainerCustomShadow(containerChild: RenterOrderDetailsButton(labelButton: "Pick-up Location", namaButton: lat =="" ? "Set your pick-up location please" : "${lat}, ${long}", onPressed: () async {
+            await lokasiSekarang().then((value){
               lat = '${value.latitude}';
               long = '${value.longitude}';
               print(lat);
               print(long);
               setState(() {});
             });
+            googleMapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(double.parse(lat), double.parse(long)), zoom: 16)));
+            markers.clear();
+            markers.add(Marker(markerId: MarkerId('currentLocation'), position: LatLng(double.parse(lat), double.parse(long))));
+            setState(() {});
           },)),
+
+
+          Container(
+            margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            height: 200,
+            color: Colors.red,
+            child: GoogleMap(
+              initialCameraPosition: initialCameraPosition,
+              markers: markers,
+              zoomControlsEnabled: false,  
+              mapType: MapType.normal,
+              onMapCreated: (GoogleMapController controller) {
+                googleMapController = controller;
+              },
+            ),
+          ),
+
+
           ContainerCustomShadow(containerChild: RenterOrderDetailsButton(labelButton: "Add ID card (E-KTP / Password)", namaButton: "Set your pick-up location please", onPressed: (){addIDCard();},)),
           SizedBox(height: 10,),
           Container(
