@@ -1,3 +1,7 @@
+import "package:cloud_firestore/cloud_firestore.dart";
+import "package:easyrent/Renter/test_countdown/test.dart";
+import "package:firebase_auth/firebase_auth.dart";
+import "package:firebase_storage/firebase_storage.dart";
 import "package:flutter/material.dart";
 class RenterChat extends StatefulWidget {
   const RenterChat({super.key});
@@ -38,14 +42,55 @@ class RenterOrderActive extends StatefulWidget {
 }
 
 class _RenterOrderActiveState extends State<RenterOrderActive> {
+  CollectionReference _orderList = FirebaseFirestore.instance.collection('orders');
+  late Stream _streamOrder;
+  List statusOrder = [100,200,400];
+  @override
+  void initState() {
+    _streamOrder = _orderList.where('id_renter', isEqualTo: FirebaseAuth.instance.currentUser!.uid).where('status_order', whereIn:List.of(statusOrder)).snapshots();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
+    _orderList.snapshots();
     return Scaffold(
-      body: Column(
-        children: [
-          ContainerCustomeShadowOrder(),
-        ],
-      ),
+      body: StreamBuilder(
+        stream: _streamOrder,
+        builder: (context, snapshot) {
+          if(snapshot.hasError){
+            return Center(child: Text(snapshot.hasError.toString()),);
+          }
+          if(snapshot.connectionState == ConnectionState.active){
+            QuerySnapshot _querySnapshot = snapshot.data;
+            List listQueryDocumentSnapshot = _querySnapshot.docs;
+            if(listQueryDocumentSnapshot.length ==0){
+              return Center(child: Text("No Orders Yet"),);
+            }
+            return ListView.builder(
+              itemCount: listQueryDocumentSnapshot.length,
+              itemBuilder: (context, index) {
+                QueryDocumentSnapshot orderData = listQueryDocumentSnapshot[index];
+                late Future<DocumentSnapshot<Map<String, dynamic>>> _futureDataVehicle = FirebaseFirestore.instance.collection('vehicle').doc(orderData['id_vehicle']).get();
+                late Map dataVehicle;
+                return FutureBuilder(
+                  future: _futureDataVehicle,
+                  builder: (context, snapshot2) {
+                    if(snapshot2.hasError){
+                      return Center(child: Text(snapshot2.hasError.toString()),);
+                    }
+                    if(snapshot2.hasData){
+                      dataVehicle = snapshot2.data!.data() as Map;
+                      return ContainerCustomeShadowOrder(vehicleUrl: dataVehicle['url_photo'], vehicleName: dataVehicle['vehicle_name'], orderDropOff: orderData['drop_off_date'], orderStatus: orderData['status_order'], orderUID: orderData.id, orderPhotoID: orderData['card_id_url'],);
+                    }
+                    return CircularProgressIndicator();
+                  },
+                );
+              },
+            );
+          }
+          return CircularProgressIndicator();
+        },
+      )
     );
   }
 }
@@ -73,10 +118,24 @@ class _RenterOrderCompleteState extends State<RenterOrderComplete> {
   }
 }
 
+
 class ContainerCustomeShadowOrder extends StatefulWidget {
   ContainerCustomeShadowOrder({
+    required this.vehicleUrl,
+    required this.orderPhotoID,
+    required this.vehicleName,
+    required this.orderUID,
+    required this.orderDropOff,
+    required this.orderStatus,
     super.key,
   });
+
+  final String vehicleUrl;
+  final String vehicleName;
+  final String orderPhotoID;
+  final String orderUID;
+  final String orderDropOff;
+  final int orderStatus;
 
   @override
   State<ContainerCustomeShadowOrder> createState() => _ContainerCustomeShadowOrderState();
@@ -85,6 +144,8 @@ class ContainerCustomeShadowOrder extends StatefulWidget {
 class _ContainerCustomeShadowOrderState extends State<ContainerCustomeShadowOrder> {
   @override
   Widget build(BuildContext context) {
+    print(widget.orderStatus.toString());
+    print(widget.orderDropOff);
     return Container(
       height: 100,
       width: double.infinity,
@@ -104,46 +165,158 @@ class _ContainerCustomeShadowOrderState extends State<ContainerCustomeShadowOrde
         children: [
           Container(
             width: 75,
-            child: Image(image: AssetImage("images/carsItem.png")),
+            child: Image(image: NetworkImage(widget.vehicleUrl)),
           ),
           SizedBox(width: 10,),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Honda Brio", style: TextStyle(fontWeight: FontWeight.w800),),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Time Remaining", style: TextStyle(fontSize: 14),),
-                        Text("21:43: 29", style: TextStyle(fontSize: 14),),
-                      ],
-                    ),
-                    Container(
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromRGBO(74, 73, 148, 1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)
-                            )
-                          ),
-                          onPressed: (){
-                          
-                          },
-                          child: Text("Done")),
-                    )
 
-                  ],
-                )
-              ],
-            ),
+          _divideByStatus(widget.orderStatus),
+        ],
+      ),
+    );
+  }
+
+  _divideByStatus(status){
+    if(status == 100){
+      return _order100();
+    }
+    if(status == 200){
+      return _order200();
+    }
+    if(status == 400){
+      return _order400();
+    }
+  }
+
+  _order100(){
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.vehicleName, style: TextStyle(fontWeight: FontWeight.w800),),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Text("Time Remaining", style: TextStyle(fontSize: 14),),
+                  // Text("21:43: 29", style: TextStyle(fontSize: 14),),
+                  Text("Menunggu Konfirmasi", style: TextStyle(fontSize: 14),),
+                ],
+              ),
+              Container(
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)
+                      )
+                    ),
+                    onPressed: () async{
+                      await FirebaseStorage.instance.refFromURL(widget.orderPhotoID).delete();
+                      await FirebaseFirestore.instance.collection('orders').doc(widget.orderUID).delete();
+                    },
+                    child: Text("Batal")),
+              )
+
+            ],
           )
         ],
       ),
     );
   }
+
+  _order200(){
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.vehicleName, style: TextStyle(fontWeight: FontWeight.w800),),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Time Remaining", style: TextStyle(fontSize: 14),),
+                  TestCountDown(dropOffDate: widget.orderDropOff,)
+                ],
+              ),
+              Container(
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromRGBO(74, 73, 148, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)
+                      )
+                    ),
+                    onPressed: (){
+                    
+                    },
+                    child: Text("Done")),
+              )
+
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+
+
+
+    _order400(){
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.vehicleName, style: TextStyle(fontWeight: FontWeight.w800),),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Text("Time Remaining", style: TextStyle(fontSize: 14),),
+                  // Text("21:43: 29", style: TextStyle(fontSize: 14),),
+                  Text("Pemesanan Ditolak", style: TextStyle(fontSize: 14),),
+                ],
+              ),
+              // Container(
+              //   child: ElevatedButton(
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: Colors.red,
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(10)
+              //         )
+              //       ),
+              //       onPressed: (){
+                    
+              //       },
+              //       child: Text("Batal")),
+              // )
+
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 

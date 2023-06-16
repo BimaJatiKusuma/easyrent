@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easyrent/Renter/renterHompage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -8,6 +10,7 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 
 
@@ -60,7 +63,7 @@ class _RenterOrderDetailsState extends State<RenterOrderDetails> {
                   dataAdmin = snapshot2.data!.data() as Map;
                   print("ini di get admin");
                   print(dataAdmin['username']);
-                  return RenterOrderDetails2(vehiclePhotoURL: dataVehicle['url_photo'], vehicleName: dataVehicle['vehicle_name'], vehiclePrice: dataVehicle['price'], adminName: dataAdmin['username'], adminPhone: dataAdmin['phone_number'], orderDuration: widget.duration, orderPickUp: widget.pickUpDate, orderDropOff: widget.dropOffDate);
+                  return RenterOrderDetails2(vehicleUID: widget.vehicleUID,vehiclePhotoURL: dataVehicle['url_photo'], vehicleName: dataVehicle['vehicle_name'], vehicleColor: dataVehicle['color'], vehicleSeats: dataVehicle['seat'].toString(), vehiclePlate: dataVehicle['plate_number'], vehiclePrice: dataVehicle['price'], adminUID: widget.adminUID, adminName: dataAdmin['username'], adminPhone: dataAdmin['phone_number'], orderDuration: widget.duration, orderPickUp: widget.pickUpDate, orderDropOff: widget.dropOffDate);
                 }
                 return CircularProgressIndicator();
               },
@@ -89,9 +92,14 @@ class _RenterOrderDetailsState extends State<RenterOrderDetails> {
 
 class RenterOrderDetails2 extends StatefulWidget {
   RenterOrderDetails2({
+    required this.vehicleUID,
     required this.vehiclePhotoURL,
     required this.vehicleName,
+    required this.vehicleColor,
+    required this.vehicleSeats,
+    required this.vehiclePlate,
     required this.vehiclePrice,
+    required this.adminUID,
     required this.adminName,
     required this.adminPhone,
     required this.orderDuration,
@@ -100,9 +108,14 @@ class RenterOrderDetails2 extends StatefulWidget {
     super.key
     });
 
+    final String vehicleUID;
     final String vehiclePhotoURL;
     final String vehicleName;
+    final String vehicleColor;
+    final String vehicleSeats;
+    final String vehiclePlate;
     final int vehiclePrice;
+    final String adminUID;
     final String adminName;
     final String adminPhone;
     final String orderPickUp;
@@ -115,9 +128,9 @@ class RenterOrderDetails2 extends StatefulWidget {
 class _RenterOrderDetails2State extends State<RenterOrderDetails2> {
 Future<Position> lokasiSekarang() async{
   bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if(!serviceEnabled){
-    return Future.error('Location services are disabled');
-  }
+  // if(!serviceEnabled){
+  //   return Future.error('Location services are disabled');
+  // }
 
   LocationPermission permission = await Geolocator.checkPermission();
   if(permission == LocationPermission.denied){
@@ -174,7 +187,7 @@ late GoogleMapController googleMapController;
     String uniqeFileName = DateTime.now().millisecondsSinceEpoch.toString();
     //Reference ke storage root
     Reference referenceRoot = FirebaseStorage.instance.ref();
-    Reference referenceDirFotoProduk = referenceRoot.child('vehicle_photo');
+    Reference referenceDirFotoProduk = referenceRoot.child('order_id_card');
 
     //Membuat reference untuk foto yang akan diupload
     Reference referenceFotoProdukUpload =
@@ -206,7 +219,7 @@ late GoogleMapController googleMapController;
       ),
       body: ListView(
         children: [
-          ContainerCustomShadow(containerChild: RenterDetailVehicle(vehiclePhotoURL: widget.vehiclePhotoURL, vehicleName: widget.vehicleName, vehiclePrice: widget.vehiclePrice, adminName: widget.adminName, adminPhone: widget.adminPhone, orderDuration: widget.orderDuration, orderPickUp: widget.orderPickUp, orderDropOff: widget.orderDropOff)),
+          ContainerCustomShadow(containerChild: RenterDetailVehicle(vehiclePhotoURL: widget.vehiclePhotoURL, vehicleName: widget.vehicleName, vehicleSeats: widget.vehicleSeats, vehiclePlate: widget.vehiclePlate, vehiclePrice: widget.vehiclePrice, adminName: widget.adminName, adminPhone: widget.adminPhone, orderDuration: widget.orderDuration, orderPickUp: widget.orderPickUp, orderDropOff: widget.orderDropOff, vehicleColor: widget.vehicleColor,)),
           
           ContainerCustomShadow(containerChild: RenterOrderDetailsButton(labelButton: "Pick-up Location", namaButton: lat =="" ? "Set your pick-up location please" : "${lat}, ${long}", onPressed: () async {
             await lokasiSekarang().then((value){
@@ -262,8 +275,34 @@ late GoogleMapController googleMapController;
           Container(
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(10, 0, 10, 30),
-            child: ElevatedButton(onPressed: (){
-                
+            child: ElevatedButton(onPressed: () async{
+                if(lat!=''){
+                  if(produkFoto != null){
+                    await uploadImage();
+                    await FirebaseFirestore.instance.collection('orders').add({
+                      'card_id_url':imageUrl,
+                      'drop_off_date':widget.orderDropOff,
+                      'duration':widget.orderDuration.toString(),
+                      'id_renter':FirebaseAuth.instance.currentUser!.uid,
+                      'id_vehicle': widget.vehicleUID,
+                      'pick_loc_lat':lat,
+                      'pick_loc_long':long,
+                      'pick_up_date':widget.orderPickUp,
+                      'status_order':100,
+                      'id_admin': widget.adminUID,
+                      'total_price':widget.vehiclePrice*widget.orderDuration
+                    });
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
+                      return RenterHomePage(selectedIndex: 0,);
+                    }), (route) => false);
+                  }
+                  else{
+                    print("Masukkan foto");
+                  }
+                }
+                else{
+                  print("pilih lokasi");
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(74, 73, 148, 1),
@@ -400,10 +439,14 @@ class RenterOrderDetailsButton extends StatelessWidget {
 
 
 
+
 class RenterDetailVehicle extends StatelessWidget {
   const RenterDetailVehicle({
     required this.vehiclePhotoURL,
     required this.vehicleName,
+    required this.vehicleColor,
+    required this.vehicleSeats,
+    required this.vehiclePlate,
     required this.vehiclePrice,
     required this.adminName,
     required this.adminPhone,
@@ -415,6 +458,9 @@ class RenterDetailVehicle extends StatelessWidget {
 
     final String vehiclePhotoURL;
     final String vehicleName;
+    final String vehicleColor;
+    final String vehicleSeats;
+    final String vehiclePlate;
     final int vehiclePrice;
     final String adminName;
     final String adminPhone;
@@ -423,6 +469,11 @@ class RenterDetailVehicle extends StatelessWidget {
     final int orderDuration;
   @override
   Widget build(BuildContext context) {
+    var newDate = DateTime.parse(orderPickUp);
+    var newDate2 = DateTime.parse(orderPickUp);
+    var pickUpDate = DateFormat("dd MMMM yyyy").format(newDate);
+    var pickUpTime = DateFormat("HH.mm").format(newDate);
+    var dropOff = DateFormat("dd MMMM yyyy, HH.mm").format(newDate2);
     return Column(
       children: [
         Container(
@@ -443,8 +494,8 @@ class RenterDetailVehicle extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(vehicleName),
-                        Text(adminName, style: TextStyle(fontSize: 14),),
+                        Text(vehicleName, style: TextStyle(fontWeight: FontWeight.w600),),
+                        Text("@${adminName}", style: TextStyle(fontSize: 14),),
                       ],
                     ),
                   ),
@@ -464,6 +515,27 @@ class RenterDetailVehicle extends StatelessWidget {
           children: [
             TableRow(
               children: [
+                Text("Color"),
+                Text(":"),
+                Text(vehicleColor)
+              ]
+            ),
+            TableRow(
+              children: [
+                Text("Seats"),
+                Text(":"),
+                Text(vehicleSeats)
+              ]
+            ),
+            TableRow(
+              children: [
+                Text("Plate Number"),
+                Text(":"),
+                Text(vehiclePlate)
+              ]
+            ),
+            TableRow(
+              children: [
                 Text("Renter Name"),
                 Text(":"),
                 Text(adminName)
@@ -480,14 +552,14 @@ class RenterDetailVehicle extends StatelessWidget {
               children: [
                 Text("Pick-up Date"),
                 Text(":"),
-                Text(orderPickUp)
+                Text(pickUpDate)
               ]
             ),
             TableRow(
               children: [
                 Text("Pick-up Time"),
                 Text(":"),
-                Text(orderPickUp)
+                Text(pickUpTime)
               ]
             ),
             TableRow(
@@ -501,7 +573,7 @@ class RenterDetailVehicle extends StatelessWidget {
               children: [
                 Text("Drop-off Time"),
                 Text(":"),
-                Text(orderDropOff)
+                Text(dropOff)
               ]
             ),
           ],
@@ -510,3 +582,129 @@ class RenterDetailVehicle extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// class RenterDetailVehicle extends StatelessWidget {
+//   const RenterDetailVehicle({
+//     required this.vehiclePhotoURL,
+//     required this.vehicleName,
+//     required this.vehiclePrice,
+//     required this.adminName,
+//     required this.adminPhone,
+//     required this.orderDuration,
+//     required this.orderPickUp,
+//     required this.orderDropOff,
+//     super.key
+//     });
+
+//     final String vehiclePhotoURL;
+//     final String vehicleName;
+//     final int vehiclePrice;
+//     final String adminName;
+//     final String adminPhone;
+//     final String orderPickUp;
+//     final String orderDropOff;
+//     final int orderDuration;
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       children: [
+//         Container(
+//           child: Row(
+//           children: [
+//             Flexible(
+//               flex: 2,
+//               child: Image(image: NetworkImage(vehiclePhotoURL),)
+//             ),
+//             SizedBox(width: 10,),
+//             Flexible(
+//               flex: 3,
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                 children: [
+//                   Container(
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         Text(vehicleName),
+//                         Text(adminName, style: TextStyle(fontSize: 14),),
+//                       ],
+//                     ),
+//                   ),
+//                   Text("Rp. ${vehiclePrice * orderDuration}", style: TextStyle(color: Colors.red),)
+//                 ],
+//               )
+//             )
+//           ],
+//         ),
+//         ),
+//         Table(
+//           columnWidths: {
+//             0: IntrinsicColumnWidth(),
+//             1: FlexColumnWidth(0.3),
+//             2: FlexColumnWidth(4),
+//           },
+//           children: [
+//             TableRow(
+//               children: [
+//                 Text("Renter Name"),
+//                 Text(":"),
+//                 Text(adminName)
+//               ]
+//             ),
+//             TableRow(
+//               children: [
+//                 Text("Phone Number"),
+//                 Text(":"),
+//                 Text(adminPhone)
+//               ]
+//             ),
+//             TableRow(
+//               children: [
+//                 Text("Pick-up Date"),
+//                 Text(":"),
+//                 Text(orderPickUp)
+//               ]
+//             ),
+//             TableRow(
+//               children: [
+//                 Text("Pick-up Time"),
+//                 Text(":"),
+//                 Text(orderPickUp)
+//               ]
+//             ),
+//             TableRow(
+//               children: [
+//                 Text("Duration"),
+//                 Text(":"),
+//                 Text("${orderDuration} Days")
+//               ]
+//             ),
+//             TableRow(
+//               children: [
+//                 Text("Drop-off Time"),
+//                 Text(":"),
+//                 Text(orderDropOff)
+//               ]
+//             ),
+//           ],
+//         )
+//       ],
+//     );
+//   }
+// }

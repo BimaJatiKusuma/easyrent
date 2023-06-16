@@ -7,7 +7,7 @@ import 'package:slide_countdown/slide_countdown.dart';
 
 class TestCountDown extends StatefulWidget {
   TestCountDown({
-    this.dropOffDate,
+    required this.dropOffDate,
     super.key
     });
     late final dropOffDate;
@@ -41,9 +41,7 @@ class _TestCountDownState extends State<TestCountDown> {
     // print(o);
     // print(o.runtimeType);
 
-    return Scaffold(
-      body: Center(
-        child: SlideCountdown(
+    return SlideCountdown(
           showZeroValue: true,
           duration: Duration(
             // days: l,
@@ -51,9 +49,7 @@ class _TestCountDownState extends State<TestCountDown> {
             // minutes: n,
             seconds: o
           ),
-        ),
-      ),
-    );
+        );
   }
 }
 
