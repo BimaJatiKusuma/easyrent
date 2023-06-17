@@ -103,20 +103,62 @@ class RenterOrderComplete extends StatefulWidget {
 }
 
 class _RenterOrderCompleteState extends State<RenterOrderComplete> {
+  CollectionReference _orderList = FirebaseFirestore.instance.collection('orders');
+  late Stream _streamOrder;
+  @override
+  void initState() {
+    _streamOrder = _orderList.where('id_renter', isEqualTo: FirebaseAuth.instance.currentUser!.uid).where('status_order', isEqualTo: 300).snapshots();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
+    _orderList.snapshots();
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
-            child: Text("No orders have been completed yet"),
-          )
-        ],
-      ),
+      body: StreamBuilder(
+        stream: _streamOrder,
+        builder: (context, snapshot) {
+          if(snapshot.hasError){
+            return Center(child: Text(snapshot.hasError.toString()),);
+          }
+          if(snapshot.connectionState == ConnectionState.active){
+            QuerySnapshot _querySnapshot = snapshot.data;
+            List listQueryDocumentSnapshot = _querySnapshot.docs;
+            if(listQueryDocumentSnapshot.length ==0){
+              return Center(child: Text("No orders have been completed yet"),);
+            }
+            return ListView.builder(
+              itemCount: listQueryDocumentSnapshot.length,
+              itemBuilder: (context, index) {
+                QueryDocumentSnapshot orderData = listQueryDocumentSnapshot[index];
+                late Future<DocumentSnapshot<Map<String, dynamic>>> _futureDataVehicle = FirebaseFirestore.instance.collection('vehicle').doc(orderData['id_vehicle']).get();
+                late Map dataVehicle;
+                return FutureBuilder(
+                  future: _futureDataVehicle,
+                  builder: (context, snapshot2) {
+                    if(snapshot2.hasError){
+                      return Center(child: Text(snapshot2.hasError.toString()),);
+                    }
+                    if(snapshot2.hasData){
+                      dataVehicle = snapshot2.data!.data() as Map;
+                      return ContainerCustomeShadowOrder(vehicleUrl: dataVehicle['url_photo'], vehicleName: dataVehicle['vehicle_name'], orderDropOff: orderData['drop_off_date'], orderStatus: orderData['status_order'], orderUID: orderData.id, orderPhotoID: orderData['card_id_url'],);
+                    }
+                    return CircularProgressIndicator();
+                  },
+                );
+              },
+            );
+          }
+          return CircularProgressIndicator();
+        },
+      )
     );
   }
 }
+
+
+
+
+
 
 
 class ContainerCustomeShadowOrder extends StatefulWidget {
@@ -144,8 +186,6 @@ class ContainerCustomeShadowOrder extends StatefulWidget {
 class _ContainerCustomeShadowOrderState extends State<ContainerCustomeShadowOrder> {
   @override
   Widget build(BuildContext context) {
-    print(widget.orderStatus.toString());
-    print(widget.orderDropOff);
     return Container(
       height: 100,
       width: double.infinity,
@@ -181,6 +221,9 @@ class _ContainerCustomeShadowOrderState extends State<ContainerCustomeShadowOrde
     }
     if(status == 200){
       return _order200();
+    }
+    if(status == 300){
+      return _order300();
     }
     if(status == 400){
       return _order400();
@@ -250,8 +293,10 @@ class _ContainerCustomeShadowOrderState extends State<ContainerCustomeShadowOrde
                         borderRadius: BorderRadius.circular(10)
                       )
                     ),
-                    onPressed: (){
-                    
+                    onPressed: () async{
+                      await FirebaseFirestore.instance.collection('orders').doc(widget.orderUID).update({
+                        'status_order':300
+                      });
                     },
                     child: Text("Done")),
               )
@@ -264,6 +309,28 @@ class _ContainerCustomeShadowOrderState extends State<ContainerCustomeShadowOrde
   }
 
 
+  _order300(){
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.vehicleName, style: TextStyle(fontWeight: FontWeight.w800),),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.orderDropOff),
+                  Text("DONE")
+                ],
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
 
 
     _order400(){
@@ -283,20 +350,6 @@ class _ContainerCustomeShadowOrderState extends State<ContainerCustomeShadowOrde
                   Text("Pemesanan Ditolak", style: TextStyle(fontSize: 14),),
                 ],
               ),
-              // Container(
-              //   child: ElevatedButton(
-              //       style: ElevatedButton.styleFrom(
-              //         backgroundColor: Colors.red,
-              //         shape: RoundedRectangleBorder(
-              //           borderRadius: BorderRadius.circular(10)
-              //         )
-              //       ),
-              //       onPressed: (){
-                    
-              //       },
-              //       child: Text("Batal")),
-              // )
-
             ],
           )
         ],

@@ -37,7 +37,7 @@ class _RenterListVehicleState extends State<RenterListVehicle> {
   
   @override
   void initState() {
-    _streamVehicle = _vehicleList.where('id_category', isEqualTo: widget.category).where('deleted_at', isEqualTo: '').snapshots();
+    _streamVehicle = _vehicleList.where('id_category', isEqualTo: widget.category).where('available', isEqualTo: 100).where('deleted_at', isEqualTo: '').snapshots();
     super.initState();
   }
 
@@ -49,7 +49,8 @@ class _RenterListVehicleState extends State<RenterListVehicle> {
         leading: IconButton(onPressed: (){
           Navigator.pop(context);
         }, icon: Icon(Icons.keyboard_double_arrow_left)),
-        title: Text("Cars"),
+        title: Text(_getCategory(widget.category)),
+        centerTitle: true,
         backgroundColor: Color.fromRGBO(12, 10, 49, 1),
       ),
       body: Column(

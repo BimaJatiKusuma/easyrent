@@ -199,7 +199,8 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                     children: [
                       CircleAvatar(
                         radius: 40,
-                        backgroundImage: widget.dataUsers['photo_profile'] != "" ? Image.network(widget.dataUsers['photo_profile']).image : (produkFoto != null ? Image.file(produkFoto!).image :AssetImage("images/admin_rent.png"))
+                        backgroundImage: produkFoto != null? Image.file(produkFoto!).image:Image.network(widget.dataUsers['photo_profile']).image
+                        // backgroundImage: widget.dataUsers['photo_profile'] != "" ? Image.network(widget.dataUsers['photo_profile']).image : (produkFoto != null ? Image.file(produkFoto!).image :AssetImage("images/admin_rent.png"))
                       ),
                       Positioned(
                         child: IconButton(onPressed: (){
@@ -209,8 +210,8 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                               return AlertDialog(
                                 title: Text("Pilih Gambar"),
                                 actions: [
-                                  ElevatedButton(onPressed: (){getImage();}, child: Text("Galeri")),
-                                  ElevatedButton(onPressed: (){getImage2();}, child: Text("Kamera")),
+                                  ElevatedButton(onPressed: (){getImage();Navigator.pop(context);}, child: Text("Galeri")),
+                                  ElevatedButton(onPressed: (){getImage2();Navigator.pop(context);}, child: Text("Kamera")),
                                 ],
                               );
                             },

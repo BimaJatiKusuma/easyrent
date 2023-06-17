@@ -74,7 +74,7 @@ class _ProductCarState extends State<ProductCar> {
                   itemCount: listQueryDocumentSnapshot.length,
                   itemBuilder: (context, index) {
                     QueryDocumentSnapshot vehicleData = listQueryDocumentSnapshot[index];
-                    return ProductCarItem(vehicleURLphoto: vehicleData['url_photo'], vehicleName: vehicleData["vehicle_name"], vehicleStatus: vehicleData['available'], vehicleUID: vehicleData.id,);
+                    return ProductCarItem(vehicleURLphoto: vehicleData['url_photo'], vehicleName: vehicleData["vehicle_name"], vehicleStatus: vehicleData['available'], vehicleUID: vehicleData.id, vehiclePlate: vehicleData['plate_number'],);
                   },
                 );
               }
@@ -91,6 +91,7 @@ class ProductCarItem extends StatefulWidget {
   ProductCarItem({
     required this.vehicleURLphoto,
     required this.vehicleName,
+    required this.vehiclePlate,
     required this.vehicleStatus,
     required this.vehicleUID,
     super.key,
@@ -98,6 +99,7 @@ class ProductCarItem extends StatefulWidget {
 
   final String vehicleURLphoto;
   final String vehicleName;
+  final String vehiclePlate;
   final int vehicleStatus;
   final String vehicleUID;
 
@@ -144,8 +146,9 @@ class _ProductCarItemState extends State<ProductCarItem> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.vehicleName),
-                      Text("status ${widget.vehicleStatus}", style: TextStyle(fontSize: 14, color: Color.fromRGBO(164, 118, 0, 1)),),
+                      Text(widget.vehicleName, style: TextStyle(fontWeight: FontWeight.w600),),
+                      Text(widget.vehiclePlate),
+                      // Text("status ${widget.vehicleStatus}", style: TextStyle(fontSize: 14, color: Color.fromRGBO(164, 118, 0, 1)),),
                     ],
                   ),
                 ),

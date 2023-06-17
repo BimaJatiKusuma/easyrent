@@ -73,6 +73,8 @@ class RequestDetail extends StatelessWidget {
                               urlPhotoID: _dataOrder['card_id_url'],
                               orderPrice: _dataOrder['total_price'],
                               orderDuration: int.parse(_dataOrder['duration']),
+                              orderUID: orderUID,
+                              orderStatus: _dataOrder['status_order'],
                               orderPickUp: _dataOrder['pick_up_date'],
                               orderDropOff: _dataOrder['drop_off_date']);
                           }
@@ -122,6 +124,8 @@ class RequestItem extends StatefulWidget {
     required this.longPickUp,
     required this.urlPhotoID,
     required this.orderPrice,
+    required this.orderUID,
+    required this.orderStatus,
     required this.orderDuration,
     required this.orderPickUp,
     required this.orderDropOff,
@@ -141,6 +145,8 @@ class RequestItem extends StatefulWidget {
     final String longPickUp;
     final String urlPhotoID;
     final int orderPrice;
+    final String orderUID;
+    final int orderStatus;
     final String orderPickUp;
     final String orderDropOff;
     final int orderDuration;
@@ -220,8 +226,8 @@ late GoogleMapController googleMapController;
 
           ContainerCustomShadow(
             containerChild: RenterOrderDetailsButton(
-              labelButton: "Add ID card (E-KTP / Password)",
-              namaButton: "ID Car Information",
+              labelButton: "ID card (E-KTP)",
+              namaButton: "ID Card Information",
               onPressed: (){},)),
           Container(
             height: 200,
@@ -236,25 +242,68 @@ late GoogleMapController googleMapController;
           ),
 
           SizedBox(height: 10,),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.fromLTRB(10, 0, 10, 30),
-            child: ElevatedButton(onPressed: () async{
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromRGBO(74, 73, 148, 1),
-                minimumSize: Size.fromHeight(40),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)
-                )
-              ),
-              child: Text("Check out")),
-          )
+          _confirmStatus(widget.orderStatus, widget.orderUID)
         ],
       ),
     );
   }
 
+  _confirmStatus(statusOrder, orderUID){
+    if(statusOrder==100){
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color.fromRGBO(148, 23, 23, 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)
+              )
+            ),
+            onPressed: () async{
+              await FirebaseFirestore.instance.collection('orders').doc(orderUID).update({
+                'status_order':400
+              });
+              Navigator.pop(context);
+            },
+            child: Text("Reject")
+          ),
+          SizedBox(width: 15,),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color.fromRGBO(74, 73, 148, 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)
+              )
+            ),
+            onPressed: ()async{
+              await FirebaseFirestore.instance.collection('orders').doc(orderUID).update({
+                'status_order':200
+              });
+              Navigator.pop(context);
+            },
+            child: Text("Acc"))
+        ],
+      );
+    }
+    if(statusOrder==200){
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(10, 0, 10, 30),
+        child: ElevatedButton(onPressed: () async{
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color.fromRGBO(74, 73, 148, 1),
+            minimumSize: Size.fromHeight(40),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)
+            )
+          ),
+          child: Text("Delivered")),
+      );
+    }
+    else return Container();
+  }
   pickUPLocation() async{
   Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   // print(position);

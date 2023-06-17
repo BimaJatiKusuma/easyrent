@@ -17,7 +17,6 @@ class Request extends StatefulWidget {
 class _RequestState extends State<Request> {
   CollectionReference _orderList = FirebaseFirestore.instance.collection('orders');
   late Stream _streamOrder;
-
   @override
   void initState() {
     _streamOrder = _orderList.where('id_admin', isEqualTo: FirebaseAuth.instance.currentUser!.uid).where('status_order', isEqualTo: 100).snapshots();

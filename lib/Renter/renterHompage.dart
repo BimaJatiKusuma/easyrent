@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easyrent/Componen/form.dart';
 import 'package:easyrent/Renter/profile/profile.dart';
 import 'package:easyrent/Renter/renterChat.dart';
 import 'package:easyrent/Renter/listvehicle/renterListVehicle.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
@@ -63,6 +65,24 @@ class RenterMainHomepage extends StatefulWidget {
 }
 
 class _RenterMainHomepageState extends State<RenterMainHomepage> {
+  String urlPhoto = '';
+  String username = '';
+  @override
+  void initState() {
+    FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot document){
+      if(document.exists){
+        var x = document.data() as Map;
+        setState(() {
+          urlPhoto = x['photo_profile'];
+          username = x['username'];
+        });
+      }
+      else{
+        print("false");
+      }
+    });
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -75,9 +95,9 @@ class _RenterMainHomepageState extends State<RenterMainHomepage> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: AssetImage("images/renter.png"),
+                  backgroundImage: urlPhoto==''? AssetImage("images/renter.png"):Image.network(urlPhoto).image,
                 ),
-                Text("@squarepants")
+                Text("@${username}")
               ],
             ),
           ),
@@ -99,6 +119,7 @@ class _RenterMainHomepageState extends State<RenterMainHomepage> {
                     padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                     child: Column(
                       children: [
+                        SizedBox(height: 30,),
                         Container(
                           width: double.infinity,
                           child: Text("Select Category", style: TextStyle(fontWeight: FontWeight.w800), textAlign: TextAlign.start,)),
@@ -122,36 +143,36 @@ class _RenterMainHomepageState extends State<RenterMainHomepage> {
 
                         SizedBox(height: 30,),
 
-                        Container(
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text("promo", style: TextStyle(fontWeight: FontWeight.w800),),
-                                  GestureDetector(
-                                    child: Text("See more", style: TextStyle(color: Color.fromRGBO(189, 85, 37, 1)),),
-                                    onTap: () {},
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                width: double.infinity,
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius:BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey,
-                                      blurRadius: 4
-                                    )
-                                  ]
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
+                        // Container(
+                        //   child: Column(
+                        //     children: [
+                        //       Row(
+                        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //         children: [
+                        //           Text("promo", style: TextStyle(fontWeight: FontWeight.w800),),
+                        //           GestureDetector(
+                        //             child: Text("See more", style: TextStyle(color: Color.fromRGBO(189, 85, 37, 1)),),
+                        //             onTap: () {},
+                        //           ),
+                        //         ],
+                        //       ),
+                        //       Container(
+                        //         width: double.infinity,
+                        //         height: 100,
+                        //         decoration: BoxDecoration(
+                        //           color: Colors.white,
+                        //           borderRadius:BorderRadius.circular(10),
+                        //           boxShadow: [
+                        //             BoxShadow(
+                        //               color: Colors.grey,
+                        //               blurRadius: 4
+                        //             )
+                        //           ]
+                        //         ),
+                        //       )
+                        //     ],
+                        //   ),
+                        // ),
 
                         SizedBox(height: 30,),
                         
@@ -162,7 +183,7 @@ class _RenterMainHomepageState extends State<RenterMainHomepage> {
                                 width: double.infinity,
                                 child: Text("News", style: TextStyle(fontWeight: FontWeight.w800),)),
                               Container(
-                                height: 100,
+                                height: 150,
                                 child: ListView(
                                   scrollDirection: Axis.horizontal,
                                   children: [
@@ -199,7 +220,7 @@ class NewsComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.fromLTRB(00, 0, 10, 0),
-      child: Image(image: AssetImage(alamatGambar)),
+      child: Image(image: AssetImage(alamatGambar), fit: BoxFit.contain,),
     );
   }
 }
@@ -250,7 +271,7 @@ class _RenterProfilState extends State<RenterProfil> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 1,
       child: Scaffold(
         appBar: TabBar(
           indicatorColor: Color.fromRGBO(12, 10, 49, 1),
@@ -259,11 +280,11 @@ class _RenterProfilState extends State<RenterProfil> {
           labelColor: Colors.black,
           tabs: [
             Tab(text: "Profile",),
-            Tab(text: "Rent Data",),
+            // Tab(text: "Rent Data",),
           ]),
         body: TabBarView(children: [
           RenterProfilProfil(),
-          Text("Ini Rent Data")
+          // Text("Ini Rent Data")
         ]),
       ),
     );

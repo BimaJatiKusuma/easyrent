@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easyrent/Componen/form.dart';
+import 'package:easyrent/Renter/test_countdown/test.dart';
 import 'package:easyrent/RenterAdmin/done/done.dart';
 import 'package:easyrent/RenterAdmin/product_car/product.dart';
 import 'package:easyrent/RenterAdmin/profile/profile.dart';
 import 'package:easyrent/RenterAdmin/request/request.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
@@ -25,7 +28,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
     });
   }
   List _widgetOptions = [
-    Text("Ini Chat"),
+    Center(child: Text("???"),),
     AdminMainHomepage(),
     AdminProfil(),
   ];
@@ -64,8 +67,41 @@ class AdminMainHomepage extends StatefulWidget {
 }
 
 class _AdminMainHomepageState extends State<AdminMainHomepage> {
+  String urlPhoto = '';
+  String username = '';
+  CollectionReference _orderList = FirebaseFirestore.instance.collection('orders');
+  late Stream _streamOrderReq;
+  late Stream _streamOrderDone;
+  late Stream _streamOrderOnGoing;
+  List statusOrder = [100,200,400];
+  @override
+  void initState() {
+    FirebaseFirestore.instance.collection('users_admin').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot document){
+      if(document.exists){
+        var x = document.data() as Map;
+        setState(() {
+          urlPhoto = x['photo_profile'];
+          username = x['username'];
+        });
+      }
+      else{
+        print("false");
+      }
+    });
+    _streamOrderOnGoing = _orderList.where('id_admin', isEqualTo: FirebaseAuth.instance.currentUser!.uid).where('status_order', isEqualTo: 200).snapshots();
+    _streamOrderReq = _orderList.where('id_admin', isEqualTo: FirebaseAuth.instance.currentUser!.uid).where('status_order', isEqualTo: 100).snapshots();
+    _streamOrderDone = _orderList.where('id_admin', isEqualTo: FirebaseAuth.instance.currentUser!.uid).where('status_order', isEqualTo: 300).snapshots();
+    // _streamOrderDone = _orderList.where('id_admin', isEqualTo: FirebaseAuth.instance.currentUser!.uid).where('status_order', isEqualTo: 400).snapshots().map((event){return event.size;});
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
+    _orderList.snapshots();
+    print("hallo");
+    // print(totalOrderReq.toString());
+    // print(_streamOrderReq.length);
+    print("hallo");
+    // print(_streamOrderDone.toList().then((value){return value.length.toString();}));
     return Column(
         children: [
           Container(
@@ -76,9 +112,9 @@ class _AdminMainHomepageState extends State<AdminMainHomepage> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: AssetImage("images/admin_rent.png"),
+                  backgroundImage: urlPhoto == '' ? AssetImage("images/admin_rent.png"): Image.network(urlPhoto).image,
                 ),
-                Text("@squarepants")
+                Text("@${username}")
               ],
             ),
           ),
@@ -89,66 +125,101 @@ class _AdminMainHomepageState extends State<AdminMainHomepage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Container(
-                  width: 160,
-                  height: 80,
-                  child: ElevatedButton(
-                    onPressed: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context){
-                        return Request();
-                      }));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromRGBO(74, 73, 148, 1),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)
-                      )
-                    ),
-                    child: Column(
-                      children: [
-                        Text("Request", style: TextStyle(color: Colors.white),),
-                        Expanded(
-                          // height: double.infinity,
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: Text("3", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),),
+                StreamBuilder(
+                  stream: _streamOrderReq,
+                  builder: (context, snapshot) {
+                    if(snapshot.hasError){
+                      return Center(child: Text(snapshot.hasError.toString()),);
+                    }
+                    if(snapshot.connectionState == ConnectionState.active){
+                      QuerySnapshot _querySnapshot = snapshot.data;
+                      List listQueryDocumentSnapshot = _querySnapshot.docs;
+                      return Container(
+                            width: 160,
+                            height: 80,
+                            child: ElevatedButton(
+                              onPressed: (){
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return Request();
+                                }));
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color.fromRGBO(74, 73, 148, 1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)
+                                )
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text("Request", style: TextStyle(color: Colors.white),),
+                                  Expanded(
+                                    // height: double.infinity,
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        listQueryDocumentSnapshot.length.toString(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                                        ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                          );
+                    }
+                    return CircularProgressIndicator();
+                  },
+                ),
+                StreamBuilder(
+                  stream: _streamOrderDone,
+                  builder: (context, snapshot) {
+                    if(snapshot.hasError){
+                      return Center(child: Text(snapshot.hasError.toString()),);
+                    }
+                    if(snapshot.connectionState == ConnectionState.active){
+                      QuerySnapshot _querySnapshot = snapshot.data;
+                      // QuerySnapshot _querySnapshot = snapshot.data;
+                      List listQueryDocumentSnapshot = _querySnapshot.docs;
+                      return Container(
+                        width: 160,
+                        height: 80,
+                        child: ElevatedButton(
+                          onPressed: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context){
+                              return Done();
+                            }));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromRGBO(74, 73, 148, 1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)
+                            )
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("Accepted", style: TextStyle(color: Colors.white),),
+                              Expanded(
+                                // height: double.infinity,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    listQueryDocumentSnapshot.length.toString(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                                    ),
+                                ),
+                              )
+                            ],
                           ),
                         )
-                      ],
-                    ),
-                  )
-                ),
-                Container(
-                  width: 160,
-                  height: 80,
-                  child: ElevatedButton(
-                    onPressed: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context){
-                        return Done();
-                      }));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromRGBO(74, 73, 148, 1),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)
-                      )
-                    ),
-                    child: Column(
-                      children: [
-                        Text("Accepted", style: TextStyle(color: Colors.white),),
-                        Expanded(
-                          // height: double.infinity,
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: Text("177", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ),
-              ],
-            ),
+                      );
+                          }
+                          return CircularProgressIndicator();
+                        },
+                      ),
+
+                      
+                    ],
+                  ),
           ),
           SizedBox(
             height: 20,
@@ -190,21 +261,45 @@ class _AdminMainHomepageState extends State<AdminMainHomepage> {
                         ),
 
                         SizedBox(height: 30,),
-
-                        Container(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Ongoing", style: TextStyle(fontWeight: FontWeight.w800),),
-                              OnGoing(),
-                              OnGoing(),
-                              OnGoing(),
-                              OnGoing(),
-                              OnGoing(),
-                            ],
-                          ),
+                        
+                        StreamBuilder(
+                          stream: _streamOrderOnGoing,
+                          builder: (context, snapshot) {
+                            if(snapshot.hasError){
+                              return Center(child: Text(snapshot.hasError.toString()),);
+                            }
+                            if(snapshot.connectionState == ConnectionState.active){
+                              QuerySnapshot _querySnapshot = snapshot.data;
+                              List listQueryDocumentSnapshot = _querySnapshot.docs;
+                              if(listQueryDocumentSnapshot.length ==0){
+                                return Center(child: Text("No Orders Yet"),);
+                              }
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: listQueryDocumentSnapshot.length,
+                                itemBuilder: (context, index) {
+                                  QueryDocumentSnapshot orderData = listQueryDocumentSnapshot[index];
+                                  late Future<DocumentSnapshot<Map<String, dynamic>>> _futureDataVehicle = FirebaseFirestore.instance.collection('vehicle').doc(orderData['id_vehicle']).get();
+                                  late Map dataVehicle;
+                                  return FutureBuilder(
+                                    future: _futureDataVehicle,
+                                    builder: (context, snapshot2) {
+                                      if(snapshot2.hasError){
+                                        return Center(child: Text(snapshot2.hasError.toString()),);
+                                      }
+                                      if(snapshot2.hasData){
+                                        dataVehicle = snapshot2.data!.data() as Map;
+                                        return OnGoing(dataOrder: orderData, dataVehicle: dataVehicle);
+                                      }
+                                      return CircularProgressIndicator();
+                                    },
+                                  );
+                                },
+                              );
+                            }
+                            return CircularProgressIndicator();
+                          },
                         ),
-
                         SizedBox(height: 30,),
                       ],
                     ),
@@ -256,8 +351,14 @@ class SelectCategory extends StatelessWidget {
 
 
 class OnGoing extends StatefulWidget {
-  const OnGoing({super.key});
+  OnGoing({
+    required this.dataOrder,
+    required this.dataVehicle,
+    super.key
+    });
 
+    final QueryDocumentSnapshot dataOrder;
+    final Map dataVehicle;
   @override
   State<OnGoing> createState() => _OnGoingState();
 }
@@ -266,63 +367,67 @@ class _OnGoingState extends State<OnGoing> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.fromLTRB(0, 5, 0, 10),
-        padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey,
-              blurRadius: 4
-            )
-          ]
-        ),
-        width: double.infinity,
-        height: 120,
-        child: Row(
-          children: [
-            Flexible(
-              flex: 2,
-              child: Image(image: AssetImage("images/carsItem.png"),)
-            ),
-            SizedBox(width: 10,),
-            Flexible(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    child: Column(
+      height: 100,
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(10, 20, 10, 0),
+      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey,
+            blurRadius: 4
+          )
+        ]
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 75,
+            child: Image(image: NetworkImage(widget.dataVehicle['url_photo'])),
+          ),
+          SizedBox(width: 10,),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.dataVehicle['vehicle_name'], style: TextStyle(fontWeight: FontWeight.w800),),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Honda Brio"),
-                        Text("Remaining time", style: TextStyle(fontSize: 14, color: Color.fromRGBO(164, 118, 0, 1)),),
+                        Text("Time Remaining", style: TextStyle(fontSize: 14),),
+                        TestCountDown(dropOffDate: widget.dataOrder['drop_off_date'],)
                       ],
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      SizedBox(width: 15,),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromRGBO(74, 73, 148, 1),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)
-                          )
-                        ),
-                        onPressed: (){},
-                        child: Text("Done"))
-                    ],
-                  )
-                ],
-              )
-            )
-          ],
-        ),
-      );
+                    Container(
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromRGBO(74, 73, 148, 1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)
+                            )
+                          ),
+                          onPressed: () async{
+                            await FirebaseFirestore.instance.collection('orders').doc(widget.dataOrder.id).update({
+                              'status_order':300
+                            });
+                          },
+                          child: Text("Done")),
+                    )
+
+                  ],
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
 
@@ -341,7 +446,7 @@ class _AdminProfilState extends State<AdminProfil> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 1,
       child: Scaffold(
         appBar: TabBar(
           indicatorColor: Color.fromRGBO(12, 10, 49, 1),
@@ -350,11 +455,11 @@ class _AdminProfilState extends State<AdminProfil> {
           labelColor: Colors.black,
           tabs: [
             Tab(text: "Profile",),
-            Tab(text: "Rent Data",),
+            // Tab(text: "Rent Data",),
           ]),
         body: TabBarView(children: [
           AdminProfilProfil(),
-          Text("Ini Rent Data")
+          // Text("Ini Rent Data")
         ]),
       ),
     );
