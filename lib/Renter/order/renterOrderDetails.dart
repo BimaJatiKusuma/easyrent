@@ -202,6 +202,7 @@ late GoogleMapController googleMapController;
       print(error);
     }
   }
+  bool statusLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -254,8 +255,8 @@ late GoogleMapController googleMapController;
 
           ContainerCustomShadow(
             containerChild: RenterOrderDetailsButton(
-              labelButton: "Add ID card (E-KTP / Password)",
-              namaButton: "Set your pick-up location please",
+              labelButton: "Add ID card (E-KTP)",
+              namaButton: "Set your ID card please",
               onPressed: (){addIDCard();},)),
           Container(
             height: 200,
@@ -278,6 +279,10 @@ late GoogleMapController googleMapController;
             child: ElevatedButton(onPressed: () async{
                 if(lat!=''){
                   if(produkFoto != null){
+                    setState(() {
+                      statusLoading = true;
+                    });
+                    _showLoading();
                     await uploadImage();
                     await FirebaseFirestore.instance.collection('orders').add({
                       'card_id_url':imageUrl,
@@ -291,6 +296,9 @@ late GoogleMapController googleMapController;
                       'status_order':100,
                       'id_admin': widget.adminUID,
                       'total_price':widget.vehiclePrice*widget.orderDuration
+                    });
+                    setState(() {
+                      statusLoading = false;
                     });
                     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
                       return RenterHomePage(selectedIndex: 0,);
@@ -317,7 +325,19 @@ late GoogleMapController googleMapController;
       ),
     );
   }
-
+  _showLoading(){
+  if(statusLoading == true){
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text("loading...", textAlign: TextAlign.center,),
+        );
+      },
+    );
+  }
+}
   pickUPLocation() async{
   Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   // print(position);
@@ -536,7 +556,7 @@ class RenterDetailVehicle extends StatelessWidget {
             ),
             TableRow(
               children: [
-                Text("Renter Name"),
+                Text("Admin Name"),
                 Text(":"),
                 Text(adminName)
               ]
@@ -581,6 +601,7 @@ class RenterDetailVehicle extends StatelessWidget {
       ],
     );
   }
+
 }
 
 

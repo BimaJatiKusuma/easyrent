@@ -12,7 +12,7 @@ import 'package:flutter/src/widgets/placeholder.dart';
 
 class AdminHomePage extends StatefulWidget {
   AdminHomePage({
-    this.selectedIndex = 1,
+    this.selectedIndex = 0,
     super.key
     });
 
@@ -28,7 +28,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
     });
   }
   List _widgetOptions = [
-    Center(child: Text("???"),),
+    // Center(child: Text("???"),),
     AdminMainHomepage(),
     AdminProfil(),
   ];
@@ -44,7 +44,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.message_rounded), label: ""),
+          // BottomNavigationBarItem(icon: Icon(Icons.message_rounded), label: ""),
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ""),
         ],
@@ -112,7 +112,7 @@ class _AdminMainHomepageState extends State<AdminMainHomepage> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: urlPhoto == '' ? AssetImage("images/admin_rent.png"): Image.network(urlPhoto).image,
+                  backgroundImage: urlPhoto == '' ? AssetImage("images/default_user.png"): Image.network(urlPhoto).image,
                 ),
                 Text("@${username}")
               ],

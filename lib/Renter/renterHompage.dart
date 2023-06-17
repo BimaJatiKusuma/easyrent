@@ -95,7 +95,7 @@ class _RenterMainHomepageState extends State<RenterMainHomepage> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: urlPhoto==''? AssetImage("images/renter.png"):Image.network(urlPhoto).image,
+                  backgroundImage: urlPhoto==''? AssetImage("images/default_user.png"):Image.network(urlPhoto).image,
                 ),
                 Text("@${username}")
               ],

@@ -1,4 +1,6 @@
 import 'package:easyrent/Componen/form.dart';
+import 'package:easyrent/Componen/sharedPreferencesLogin.dart';
+import 'package:easyrent/Componen/showLoading.dart';
 import 'package:easyrent/Renter/renterHompage.dart';
 import 'package:easyrent/welcomingPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +10,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class RenterProfilProfil extends StatefulWidget {
@@ -46,7 +49,7 @@ class _RenterProfilProfilState extends State<RenterProfilProfil> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage: widget.dataUsers['photo_profile'] != "" ? Image.network(widget.dataUsers['photo_profile']).image :AssetImage("images/admin_rent.png"),
+                      backgroundImage: widget.dataUsers['photo_profile'] != "" ? Image.network(widget.dataUsers['photo_profile']).image :AssetImage("images/default_user.png"),
                       
                     ),
                     SizedBox(height: 10,),
@@ -75,6 +78,7 @@ class _RenterProfilProfilState extends State<RenterProfilProfil> {
                     ElevatedButton(onPressed: () async {
                       try{
                         await FirebaseAuth.instance.signOut();
+                        await logoutSharedPref();
                         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
                           return WelcomingPage();
                         }), (route) => false);
@@ -166,7 +170,7 @@ class _RenterProfilEditState extends State<RenterProfilEdit> {
       print(error);
     }
   }
-  
+  bool statusLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -198,7 +202,7 @@ class _RenterProfilEditState extends State<RenterProfilEdit> {
                     children: [
                       CircleAvatar(
                         radius: 40,
-                        backgroundImage: produkFoto != null? Image.file(produkFoto!).image:Image.network(widget.dataUsers['photo_profile']).image
+                        backgroundImage: produkFoto != null? Image.file(produkFoto!).image : (widget.dataUsers['photo_profile']!=''? Image.network(widget.dataUsers['photo_profile']).image:AssetImage("images/default_user.png"))
                         // backgroundImage: widget.dataUsers['photo_profile'] != "" ? Image.network(widget.dataUsers['photo_profile']).image : (produkFoto != null ? Image.file(produkFoto!).image :AssetImage("images/admin_rent.png"))
                       ),
                       Positioned(
@@ -233,6 +237,10 @@ class _RenterProfilEditState extends State<RenterProfilEdit> {
                 FormGroup(stringNamaLabel: "Address", controllerNama: addressController, keyboardType: TextInputType.text),
                 SizedBox(height: 30,),
                 ElevatedButton(onPressed: () async{
+                  setState(() {
+                    statusLoading = true;
+                  });
+                  showLoading(statusLoading, context);
                   await updateImage();
                   FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).update({
                     'username':usernameController.text,
@@ -240,7 +248,7 @@ class _RenterProfilEditState extends State<RenterProfilEdit> {
                     'phone_number':phoneController.text,
                     "photo_profile":imageUrl,
                   });
-
+                  setState(() {statusLoading = false;});
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
                     return RenterHomePage(selectedIndex: 2,);
                   }));

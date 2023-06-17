@@ -77,7 +77,7 @@ class _ProductCarAddState extends State<ProductCarAdd> {
       print(error);
     }
   }
-
+  bool statusLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,6 +154,10 @@ class _ProductCarAddState extends State<ProductCarAdd> {
                     onPressed: () async{
                       if(_formkey.currentState!.validate()==true){
                         if(produkFoto != null){
+                          setState(() {
+                            statusLoading = true;
+                          });
+                          _showLoading();
                           await uploadImage();
                           await vehicleDB.add({
                             "color":colorController.text,
@@ -166,6 +170,9 @@ class _ProductCarAddState extends State<ProductCarAdd> {
                             "vehicle_name":productNameController.text,
                             "deleted_at":"",
                             "available":100
+                          });
+                          setState(() {
+                            statusLoading = false;
                           });
                           Navigator.pop(context);
                         }
@@ -188,6 +195,19 @@ class _ProductCarAddState extends State<ProductCarAdd> {
         ],
       ),
     );
+  }
+  _showLoading(){
+    if(statusLoading == true){
+      return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text("loading...", textAlign: TextAlign.center,),
+          );
+        },
+      );
+    }
   }
 }
 

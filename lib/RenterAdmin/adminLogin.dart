@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easyrent/Componen/sharedPreferencesLogin.dart';
+import 'package:easyrent/Componen/showLoading.dart';
 import 'package:easyrent/RenterAdmin/adminHompage.dart';
 import 'package:easyrent/RenterAdmin/adminRegis.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,6 +22,7 @@ class _AdminLoginState extends State<AdminLogin> {
   TextEditingController passwordController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   String alertText = "";
+  bool statusLoading = false;
 
 
   @override
@@ -88,18 +91,21 @@ class _AdminLoginState extends State<AdminLogin> {
                         validasiRespon: "Password minimal 6 karakter",
                       ),
                       Text(alertText, style: TextStyle(color: Colors.red),),
-                      SizedBox(
-                        height: 30,
-                      ),
+                      Visibility(
+                        visible: statusLoading,
+                        child: Container(child: CircularProgressIndicator(color: Color.fromRGBO(74, 73, 148, 1),))),
+                      SizedBox(height: 10,),
                       Container(
                         // color: Colors.yellow,
                         child: Column(
                           children: [
                             ElevatedButton(
                               onPressed: () {
-                                _formkey.currentState!.validate();
                                 
+                                _formkey.currentState!.validate();
                                 if (_formkey.currentState!.validate() == true){
+                                  setState(() {statusLoading = true;});
+                                  
                                   signIn(emailController.text, passwordController.text);
                                   // Navigator.push(context, MaterialPageRoute(builder: (context){
                                   //   return AdminHomePage();
@@ -156,20 +162,21 @@ class _AdminLoginState extends State<AdminLogin> {
       .then((DocumentSnapshot documentSnapshot) {
         if (documentSnapshot.exists){
           if(documentSnapshot.get('deleted_at')==''){
+              login("admin");
               Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
                 return AdminHomePage();
               }), (route) => false);
           }
           else{
             setState(() {
-              // visible = false;
+              statusLoading = false;
               alertText = 'Akun telah dihapus/dinonaktifkan';
             });
           }
         }
         else{
           setState(() {
-            // visible = false;
+            statusLoading = false;
             alertText = 'Akun renter tidak bisa digunakan sebagai admin';
           });
           print('Email tidak terdaftar');
@@ -191,18 +198,21 @@ class _AdminLoginState extends State<AdminLogin> {
         print(e.code);
         if (e.code == 'user-not-found'){
           setState(() {
-            // visible = false;
+            statusLoading = false;
             alertText = 'Email tidak terdaftar';
           });
           print('Email tidak terdaftar');
         }
         else if (e.code == 'wrong-password'){
           setState(() {
-            // visible = false;
+            statusLoading = false;
             alertText = 'Kata sandi salah';
           });
           print('Kata sandi salah');
         }
+        else setState(() {
+          statusLoading = false;
+        });
       }
     }
   }

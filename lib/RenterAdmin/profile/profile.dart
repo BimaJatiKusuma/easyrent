@@ -1,4 +1,6 @@
 import 'package:easyrent/Componen/form.dart';
+import 'package:easyrent/Componen/sharedPreferencesLogin.dart';
+import 'package:easyrent/Componen/showLoading.dart';
 import 'package:easyrent/RenterAdmin/adminHompage.dart';
 import 'package:easyrent/welcomingPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -46,7 +48,7 @@ class _AdminProfilProfilState extends State<AdminProfilProfil> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage: widget.dataUsers['photo_profile'] != "" ? Image.network(widget.dataUsers['photo_profile']).image :AssetImage("images/admin_rent.png"),
+                      backgroundImage: widget.dataUsers['photo_profile'] != "" ? Image.network(widget.dataUsers['photo_profile']).image :AssetImage("images/default_user.png"),
                       
                     ),
                     SizedBox(height: 10,),
@@ -75,6 +77,7 @@ class _AdminProfilProfilState extends State<AdminProfilProfil> {
                         ElevatedButton(onPressed: () async {
                           try{
                             await FirebaseAuth.instance.signOut();
+                            await logoutSharedPref();
                             Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
                               return WelcomingPage();
                             }), (route) => false);
@@ -167,7 +170,7 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
     }
   }
 
-  
+  bool statusLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,7 +202,7 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                     children: [
                       CircleAvatar(
                         radius: 40,
-                        backgroundImage: produkFoto != null? Image.file(produkFoto!).image:Image.network(widget.dataUsers['photo_profile']).image
+                        backgroundImage: produkFoto != null? Image.file(produkFoto!).image : (widget.dataUsers['photo_profile']!=''? Image.network(widget.dataUsers['photo_profile']).image:AssetImage("images/default_user.png")),
                         // backgroundImage: widget.dataUsers['photo_profile'] != "" ? Image.network(widget.dataUsers['photo_profile']).image : (produkFoto != null ? Image.file(produkFoto!).image :AssetImage("images/admin_rent.png"))
                       ),
                       Positioned(
@@ -210,8 +213,8 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                               return AlertDialog(
                                 title: Text("Pilih Gambar"),
                                 actions: [
-                                  ElevatedButton(onPressed: (){getImage();Navigator.pop(context);}, child: Text("Galeri")),
-                                  ElevatedButton(onPressed: (){getImage2();Navigator.pop(context);}, child: Text("Kamera")),
+                                  ElevatedButton(onPressed: ()async{await getImage();Navigator.pop(context);}, child: Text("Galeri")),
+                                  ElevatedButton(onPressed: ()async{await getImage2();Navigator.pop(context);}, child: Text("Kamera")),
                                 ],
                               );
                             },
@@ -234,6 +237,8 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                 FormGroup(stringNamaLabel: "Address", controllerNama: addressController, keyboardType: TextInputType.text),
                 SizedBox(height: 30,),
                 ElevatedButton(onPressed: () async{
+                  setState(() {statusLoading = true;});
+                  showLoading(statusLoading, context);
                   await updateImage();
                   FirebaseFirestore.instance.collection('users_admin').doc(FirebaseAuth.instance.currentUser!.uid).update({
                     'username':usernameController.text,
@@ -241,9 +246,9 @@ class _AdminProfilEditState extends State<AdminProfilEdit> {
                     'phone_number':phoneController.text,
                     "photo_profile":imageUrl,
                   });
-
+                  setState(() {statusLoading = false;});
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
-                    return AdminHomePage(selectedIndex: 2,);
+                    return AdminHomePage(selectedIndex: 1,);
                   }));
                 }, child: Text("Save Change"),
                   style: ElevatedButton.styleFrom(

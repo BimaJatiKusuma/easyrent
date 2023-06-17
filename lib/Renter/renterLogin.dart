@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easyrent/Componen/sharedPreferencesLogin.dart';
 import 'package:easyrent/Renter/renterHompage.dart';
 import 'package:easyrent/Renter/renterRegis.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Componen/form.dart';
 
@@ -20,7 +22,7 @@ class _RenterLoginState extends State<RenterLogin> {
   TextEditingController passwordController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   String alertText = "";
-
+  bool statusLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -88,9 +90,10 @@ class _RenterLoginState extends State<RenterLogin> {
                         validasiRespon: "Password minimal 6 karakter",
                       ),
                       Text(alertText, style: TextStyle(color: Colors.red),),
-                      SizedBox(
-                        height: 30,
-                      ),
+                      Visibility(
+                        visible: statusLoading,
+                        child: Container(child: CircularProgressIndicator(color: Color.fromRGBO(74, 73, 148, 1),))),
+                      SizedBox(height: 10,),
                       Container(
                         // color: Colors.yellow,
                         child: Column(
@@ -98,8 +101,8 @@ class _RenterLoginState extends State<RenterLogin> {
                             ElevatedButton(
                               onPressed: () {
                                 _formkey.currentState!.validate();
-                                
                                 if (_formkey.currentState!.validate() == true){
+                                  setState(() {statusLoading = true;});
                                   signIn(emailController.text, passwordController.text);
                                 }
                               },
@@ -151,20 +154,21 @@ class _RenterLoginState extends State<RenterLogin> {
       .then((DocumentSnapshot documentSnapshot) {
         if (documentSnapshot.exists){
           if(documentSnapshot.get('deleted_at')==''){
+              login("renter");
               Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
                 return RenterHomePage();
               }), (route) => false);
           }
           else{
             setState(() {
-              // visible = false;
+              statusLoading = false;
               alertText = 'Akun telah dihapus/dinonaktifkan';
             });
           }
         }
         else{
           setState(() {
-            // visible = false;
+            statusLoading = false;
             alertText = 'Akun admin tidak bisa digunakan sebagai renter';
           });
           print('Email tidak terdaftar');
@@ -186,18 +190,21 @@ class _RenterLoginState extends State<RenterLogin> {
         print(e.code);
         if (e.code == 'user-not-found'){
           setState(() {
-            // visible = false;
+            statusLoading = false;
             alertText = 'Email tidak terdaftar';
           });
           print('Email tidak terdaftar');
         }
         else if (e.code == 'wrong-password'){
           setState(() {
-            // visible = false;
+            statusLoading = false;
             alertText = 'Kata sandi salah';
           });
           print('Kata sandi salah');
         }
+        else setState(() {
+          statusLoading = false;
+        });
       }
     }
   }

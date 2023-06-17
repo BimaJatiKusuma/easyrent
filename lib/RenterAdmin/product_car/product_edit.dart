@@ -78,7 +78,7 @@ class _ProductCarEditState extends State<ProductCarEdit> {
       print(error);
     }
   }
-
+  bool statusLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,6 +165,10 @@ class _ProductCarEditState extends State<ProductCarEdit> {
                           onPressed: () async{
                             if(_formkey.currentState!.validate()==true){
                               if(produkFoto != null){
+                                setState(() {
+                                  statusLoading = true;
+                                });
+                                _showLoading();
                                 await updateImage();
                                 await widget._referenceVehicle.update({
                                   "color":colorController.text,
@@ -174,6 +178,9 @@ class _ProductCarEditState extends State<ProductCarEdit> {
                                   "seat":int.parse(totalSeatController.text),
                                   "url_photo":imageUrl,
                                   "vehicle_name":productNameController.text,
+                                });
+                                setState(() {
+                                  statusLoading = false;
                                 });
                                 Navigator.pop(context);
                               }
@@ -201,6 +208,20 @@ class _ProductCarEditState extends State<ProductCarEdit> {
         }
       ),
     );
+  }
+  
+  _showLoading(){
+    if(statusLoading == true){
+      return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text("loading...", textAlign: TextAlign.center,),
+          );
+        },
+      );
+    }
   }
 }
 
