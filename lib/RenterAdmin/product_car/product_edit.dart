@@ -163,8 +163,8 @@ class _ProductCarEditState extends State<ProductCarEdit> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () async{
+                            print("updateeeee");
                             if(_formkey.currentState!.validate()==true){
-                              if(produkFoto != null){
                                 setState(() {
                                   statusLoading = true;
                                 });
@@ -183,12 +183,7 @@ class _ProductCarEditState extends State<ProductCarEdit> {
                                   statusLoading = false;
                                 });
                                 Navigator.pop(context);
-                              }
-                            }
-                            else {
-                              setState(() {
-                                alertImage = "foto harus diisi";
-                              });
+                                Navigator.pop(context);
                             }
                           },
                           style: ElevatedButton.styleFrom(

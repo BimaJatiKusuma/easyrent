@@ -175,6 +175,7 @@ class _ProductCarAddState extends State<ProductCarAdd> {
                             statusLoading = false;
                           });
                           Navigator.pop(context);
+                          Navigator.pop(context);
                         }
                       }
                       else {
