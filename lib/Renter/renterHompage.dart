@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easyrent/Componen/abooutInformation.dart';
 import 'package:easyrent/Componen/form.dart';
 import 'package:easyrent/Renter/profile/profile.dart';
 import 'package:easyrent/Renter/renterChat.dart';
@@ -273,15 +274,19 @@ class _RenterProfilState extends State<RenterProfil> {
     return DefaultTabController(
       length: 1,
       child: Scaffold(
-        appBar: TabBar(
-          indicatorColor: Color.fromRGBO(12, 10, 49, 1),
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicatorWeight: 3,
-          labelColor: Colors.black,
-          tabs: [
-            Tab(text: "Profile",),
-            // Tab(text: "Rent Data",),
-          ]),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Text("PROFILE"),
+          centerTitle: true,
+          actions: [
+            IconButton(onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context){
+                return AboutInformation();
+              }));
+            }, icon: Icon(Icons.info, color: Colors.white,))
+          ],
+          backgroundColor: Color.fromRGBO(12, 10, 49, 1),
+        ),
         body: TabBarView(children: [
           RenterProfilProfil(),
           // Text("Ini Rent Data")
